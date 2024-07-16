@@ -11,10 +11,13 @@ local life = require("lualife.life")
 local UPDATE_PERIOD = 0.25
 local MIN_SIDE_CELL_COUNT = love.system.getOS() ~= "Android" and 30 or 25
 local FIELD_FILLING = 0.25
+local CELL_PADDING = 0.1
+local CELL_BORDER = 0.125
 
 local width
 local height
 local field
+local cell_size
 local total_dt
 
 function _initialize_field(width, height)
@@ -32,14 +35,17 @@ function _initialize_field(width, height)
         field_size = Size:new(MIN_SIDE_CELL_COUNT, max_side_cell_count)
     end
 
-    return random.generate(Field:new(field_size), FIELD_FILLING)
+    local field = random.generate(Field:new(field_size), FIELD_FILLING)
+    return field, cell_size
 end
 
 function love.load()
     width = love.graphics.getWidth()
     height = love.graphics.getHeight()
-    field = _initialize_field(width, height)
+    field, cell_size = _initialize_field(width, height)
     total_dt = 0
+
+    love.graphics.setBackgroundColor({0.3, 0.3, 1})
 end
 
 function love.update(dt)
@@ -51,21 +57,27 @@ function love.update(dt)
 end
 
 function love.draw()
-    local field_as_string = ""
     field:map(function(point, contains)
-        field_as_string = field_as_string .. "\t" .. (contains and "O" or "..")
-        if point.x == field.size.width - 1 then
-            field_as_string = field_as_string .. "\n"
+        if not contains then
+            return
         end
-    end)
 
-    love.graphics.print(field_as_string, 10, 10)
+        local x = point.x * cell_size + cell_size / 2
+        local y = point.y * cell_size + cell_size / 2
+        local radius = (cell_size - cell_size * CELL_PADDING) / 2
+
+        love.graphics.setColor({0.85, 0.85, 0.85})
+        love.graphics.circle("fill", x, y, radius)
+
+        love.graphics.setColor({1, 1, 1})
+        love.graphics.circle("fill", x, y, radius - cell_size * CELL_BORDER)
+    end)
 end
 
 function love.resize(new_width, new_height)
     width = new_width
     height = new_height
-    field = _initialize_field(width, height)
+    field, cell_size = _initialize_field(width, height)
 end
 
 function love.keypressed(key)
