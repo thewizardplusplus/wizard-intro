@@ -17,3 +17,9 @@ function love.resize(new_width, new_height)
     width = new_width
     height = new_height
 end
+
+function love.keypressed(key)
+    if key == "escape" then
+        love.event.quit()
+    end
+end
