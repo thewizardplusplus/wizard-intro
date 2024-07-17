@@ -8,6 +8,7 @@ local Field = require("lualife.models.field")
 local random = require("lualife.random")
 local life = require("lualife.life")
 local center = require("center")
+local flux = require("flux")
 
 local UPDATE_PERIOD = 0.25
 local START_DELAY = 1
@@ -16,6 +17,7 @@ local FIELD_FILLING = 0.25
 local CELL_PADDING = 0.1
 local CELL_BORDER = 0.125
 local LOGO_PADDING = 0.1
+local LOGO_FADDING_DURATION = 2
 
 local width
 local height
@@ -55,10 +57,10 @@ function _initialize_field(width, height)
 end
 
 function _initialize_logo(width, height, mode)
-    local logo
+    local logo = { opacity = 0 }
     if mode == "loading" then
-        logo = love.graphics.newImage("resources/logo.png")
-        center:setupScreen(logo:getPixelWidth(), logo:getPixelHeight())
+        logo.image = love.graphics.newImage("resources/logo.png")
+        center:setupScreen(logo.image:getPixelWidth(), logo.image:getPixelHeight())
     elseif mode == "resizing" then
         center:resize(width, height)
     else
@@ -69,6 +71,11 @@ function _initialize_logo(width, height, mode)
     local logo_padding = min_dimension * LOGO_PADDING
     center:setBorders(logo_padding, logo_padding, logo_padding, logo_padding)
     center:apply()
+
+    flux.to(logo, LOGO_FADDING_DURATION, { opacity = 1 })
+        :ease("cubicout")
+        :delay(START_DELAY)
+        :after(logo, LOGO_FADDING_DURATION, { opacity = 0 })
 
     return logo
 end
@@ -93,6 +100,8 @@ function love.update(dt)
         field = life.populate(field)
         total_dt = total_dt - UPDATE_PERIOD
     end
+
+    flux.update(dt)
 end
 
 function love.draw()
@@ -113,7 +122,8 @@ function love.draw()
     end)
 
     center:start()
-    love.graphics.draw(logo, 0, 0)
+    love.graphics.setColor({1, 1, 1, logo.opacity})
+    love.graphics.draw(logo.image, 0, 0)
     center:finish()
 end
 
