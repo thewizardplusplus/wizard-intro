@@ -1,10 +1,23 @@
 # Wizard Intro
 
+![](docs/screenshot.png)
+
 The demo to generate intros for my YouTube channel.
 
 I came up with an intro for my videos, but my video editing experience wasn't enough to realize what I had in mind. So I decided to write a demo to render this intro and then use screen capture.
 
 _**Disclaimer:** this demo was written directly on an Android smartphone with the [QLua](https://play.google.com/store/apps/details?id=com.quseit.qlua5pro2) IDE and the [LÖVE for Android](https://play.google.com/store/apps/details?id=org.love2d.android) app._
+
+## Features
+
+- common features:
+  - draw in the fullscreen mode;
+  - quit by Escape key;
+- drawing of the background:
+  - use [Conway's Game of Life](https://en.wikipedia.org/wiki/Conway's_Game_of_Life) as a background:
+    - use the naive algorithm with iterating and copying of a whole field;
+    - ignore outside points;
+    - support for a start delay for populating.
 
 ## Running
 
