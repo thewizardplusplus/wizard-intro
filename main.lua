@@ -46,6 +46,7 @@ function love.load()
     field, cell_size = _initialize_field(width, height)
     total_dt = 0
 
+    love.mouse.setVisible(false)
     love.graphics.setBackgroundColor({0.3, 0.3, 1})
 end
 
