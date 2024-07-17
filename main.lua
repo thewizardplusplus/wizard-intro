@@ -9,6 +9,7 @@ local random = require("lualife.random")
 local life = require("lualife.life")
 
 local UPDATE_PERIOD = 0.25
+local START_DELAY = 1
 local MIN_SIDE_CELL_COUNT = love.system.getOS() ~= "Android" and 30 or 25
 local FIELD_FILLING = 0.25
 local CELL_PADDING = 0.1
@@ -50,6 +51,9 @@ end
 
 function love.update(dt)
     total_dt = total_dt + dt
+    if total_dt < START_DELAY then
+        return
+    end
     if total_dt > UPDATE_PERIOD then
         field = life.populate(field)
         total_dt = total_dt - UPDATE_PERIOD
@@ -78,6 +82,7 @@ function love.resize(new_width, new_height)
     width = new_width
     height = new_height
     field, cell_size = _initialize_field(width, height)
+    total_dt = 0 -- force the start delay
 end
 
 function love.keypressed(key)
