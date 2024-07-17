@@ -7,6 +7,7 @@ local Point = require("lualife.models.point")
 local Field = require("lualife.models.field")
 local random = require("lualife.random")
 local life = require("lualife.life")
+local svglover = require("svglover")
 
 local UPDATE_PERIOD = 0.25
 local START_DELAY = 1
@@ -46,6 +47,10 @@ function love.load()
     field, cell_size = _initialize_field(width, height)
     total_dt = 0
 
+    local min_dimension = math.min(width, height)
+    local logo = svglover.load("resources/logo.svg")
+    svglover.display(logo, 0, 0, min_dimension, min_dimension)
+
     love.mouse.setVisible(false)
     love.graphics.setBackgroundColor({0.3, 0.3, 1})
 end
@@ -77,6 +82,8 @@ function love.draw()
         love.graphics.setColor({1, 1, 1})
         love.graphics.circle("fill", x, y, radius - cell_size * CELL_BORDER)
     end)
+
+    svglover.draw()
 end
 
 function love.resize(new_width, new_height)
