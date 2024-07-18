@@ -24,9 +24,6 @@ local LOGO_FADDING_DURATION = 2
 local width
 local height
 local field
-local cell_size
-local x_offset
-local y_offset
 local logo
 local total_dt
 
@@ -54,8 +51,13 @@ function _initialize_field(width, height)
         y_offset = max_side_offset
     end
 
-    local field = random.generate(Field:new(field_size), FIELD_FILLING)
-    return field, cell_size, x_offset, y_offset
+    local inner_field = random.generate(Field:new(field_size), FIELD_FILLING)
+    return {
+        inner_field = inner_field,
+        cell_size = cell_size,
+        x_offset = x_offset,
+        y_offset = y_offset,
+    }
 end
 
 function _initialize_logo(width, height, mode, prev_logo)
@@ -97,7 +99,7 @@ end
 function love.load()
     width = love.graphics.getWidth()
     height = love.graphics.getHeight()
-    field, cell_size, x_offset, y_offset = _initialize_field(width, height)
+    field = _initialize_field(width, height)
     logo = _initialize_logo(width, height, "loading")
     total_dt = 0
 
@@ -108,7 +110,7 @@ end
 function love.update(dt)
     total_dt = total_dt + dt
     if total_dt >= START_DELAY and total_dt > UPDATE_PERIOD then
-        field = life.populate(field)
+        field.inner_field = life.populate(field.inner_field)
         total_dt = total_dt - UPDATE_PERIOD
     end
 
@@ -117,20 +119,20 @@ function love.update(dt)
 end
 
 function love.draw()
-    field:map(function(point, contains)
+    field.inner_field:map(function(point, contains)
         if not contains then
             return
         end
 
-        local x = point.x * cell_size + cell_size / 2 + x_offset
-        local y = point.y * cell_size + cell_size / 2 + y_offset
-        local radius = (cell_size - cell_size * CELL_PADDING) / 2
+        local x = point.x * field.cell_size + field.cell_size / 2 + field.x_offset
+        local y = point.y * field.cell_size + field.cell_size / 2 + field.y_offset
+        local radius = (field.cell_size - field.cell_size * CELL_PADDING) / 2
 
         love.graphics.setColor({0.85, 0.85, 0.85})
         love.graphics.circle("fill", x, y, radius)
 
         love.graphics.setColor({1, 1, 1})
-        love.graphics.circle("fill", x, y, radius - cell_size * CELL_BORDER)
+        love.graphics.circle("fill", x, y, radius - field.cell_size * CELL_BORDER)
     end)
 
     center:start()
@@ -142,7 +144,7 @@ end
 function love.resize(new_width, new_height)
     width = new_width
     height = new_height
-    field, cell_size, x_offset, y_offset = _initialize_field(width, height)
+    field = _initialize_field(width, height)
     _initialize_logo(width, height, "resizing", logo)
     total_dt = 0 -- force the start delay
 end
