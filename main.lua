@@ -56,8 +56,12 @@ function _initialize_field(width, height)
     return field, cell_size, x_offset, y_offset
 end
 
-function _initialize_logo(width, height, mode)
-    local logo = { opacity = 0 }
+function _initialize_logo(width, height, mode, prev_logo)
+    local logo = prev_logo
+    if not logo then
+        logo = { opacity = 0 }
+    end
+
     if mode == "loading" then
         logo.image = love.graphics.newImage("resources/logo.png")
         center:setupScreen(logo.image:getPixelWidth(), logo.image:getPixelHeight())
@@ -128,7 +132,7 @@ function love.resize(new_width, new_height)
     width = new_width
     height = new_height
     field, cell_size, x_offset, y_offset = _initialize_field(width, height)
-    _initialize_logo(width, height, "resizing")
+    _initialize_logo(width, height, "resizing", logo)
     total_dt = 0 -- force the start delay
 end
 
