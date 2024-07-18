@@ -9,9 +9,11 @@ local random = require("lualife.random")
 local life = require("lualife.life")
 local center = require("center")
 local flux = require("flux")
+local tick = require("tick")
 
 local UPDATE_PERIOD = 0.25
 local START_DELAY = 1
+local FINISH_DELAY = 1
 local MIN_SIDE_CELL_COUNT = love.system.getOS() ~= "Android" and 30 or 25
 local FIELD_FILLING = 0.25
 local CELL_PADDING = 0.1
@@ -80,6 +82,14 @@ function _initialize_logo(width, height, mode, prev_logo)
         :ease("cubicout")
         :delay(START_DELAY)
         :after(logo, LOGO_FADDING_DURATION, { opacity = 0 })
+        :oncomplete(function()
+            tick.delay(
+                function()
+                    love.event.quit()
+                end,
+                FINISH_DELAY
+            )
+        end)
 
     return logo
 end
@@ -103,6 +113,7 @@ function love.update(dt)
     end
 
     flux.update(dt)
+    tick.update(dt)
 end
 
 function love.draw()
