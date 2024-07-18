@@ -93,10 +93,7 @@ end
 
 function love.update(dt)
     total_dt = total_dt + dt
-    if total_dt < START_DELAY then
-        return
-    end
-    if total_dt > UPDATE_PERIOD then
+    if total_dt >= START_DELAY and total_dt > UPDATE_PERIOD then
         field = life.populate(field)
         total_dt = total_dt - UPDATE_PERIOD
     end
