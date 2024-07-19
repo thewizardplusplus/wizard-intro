@@ -25,9 +25,12 @@ local width
 local height
 local field
 local logo
-local total_dt
 
-function _initialize_field(width, height)
+function _initialize_field(width, height, prev_field)
+    if prev_field then
+        prev_field.ticker:stop()
+    end
+
     local min_dimension = math.min(width, height)
     local max_dimension = math.max(width, height)
     local is_album_orientation = width > height
@@ -52,12 +55,26 @@ function _initialize_field(width, height)
     end
 
     local inner_field = random.generate(Field:new(field_size), FIELD_FILLING)
-    return {
+    local field = {
         inner_field = inner_field,
         cell_size = cell_size,
         x_offset = x_offset,
         y_offset = y_offset,
     }
+
+    field.ticker = tick.delay(
+        function()
+            field.ticker = tick.recur(
+                function()
+                    field.inner_field = life.populate(field.inner_field)
+                end,
+                UPDATE_PERIOD
+            )
+        end,
+        START_DELAY
+    )
+
+    return field
 end
 
 function _initialize_logo(width, height, mode, prev_logo)
@@ -101,19 +118,12 @@ function love.load()
     height = love.graphics.getHeight()
     field = _initialize_field(width, height)
     logo = _initialize_logo(width, height, "loading")
-    total_dt = 0
 
     love.mouse.setVisible(false)
     love.graphics.setBackgroundColor({0.3, 0.3, 1})
 end
 
 function love.update(dt)
-    total_dt = total_dt + dt
-    if total_dt >= START_DELAY and total_dt > UPDATE_PERIOD then
-        field.inner_field = life.populate(field.inner_field)
-        total_dt = total_dt - UPDATE_PERIOD
-    end
-
     flux.update(dt)
     tick.update(dt)
 end
@@ -144,9 +154,8 @@ end
 function love.resize(new_width, new_height)
     width = new_width
     height = new_height
-    field = _initialize_field(width, height)
+    field = _initialize_field(width, height, field)
     _initialize_logo(width, height, "resizing", logo)
-    total_dt = 0 -- force the start delay
 end
 
 function love.keypressed(key)
