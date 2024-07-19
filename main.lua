@@ -20,6 +20,7 @@ local CELL_PADDING = 0.1
 local CELL_BORDER = 0.125
 local LOGO_PADDING = 0.1
 local LOGO_FADDING_DURATION = 2
+local LOGO_FADDING_START_DELAY = 1
 
 local width
 local height
@@ -101,7 +102,7 @@ function _initialize_logo(width, height, mode, prev_logo)
 
     logo.fadding = flux.to(logo, LOGO_FADDING_DURATION, { opacity = 1 })
         :ease("cubicout")
-        :delay(START_DELAY)
+        :delay(START_DELAY + LOGO_FADDING_START_DELAY)
         :after(logo, LOGO_FADDING_DURATION, { opacity = 0 })
         :oncomplete(function()
             logo.ticker = tick.delay(
