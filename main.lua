@@ -170,6 +170,13 @@ function love.draw()
         love.graphics.draw(logo.image, 0, 0)
         center:finish()
     end
+
+    love.graphics.setColor({0.2, 0.2, 0.2})
+    love.graphics.rectangle("fill", 100 - 5, 100 + 5, 200, 50)
+    love.graphics.setColor({0.2, 0.83, 0.2})
+    love.graphics.rectangle("fill", 100, 100, 200, 50)
+    love.graphics.setColor({0.3, 1, 0.3})
+    love.graphics.rectangle("fill", 100 + 2, 100 + 2, 200 - 4, 50 - 4)
 end
 
 function love.resize(new_width, new_height)
