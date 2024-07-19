@@ -17,7 +17,13 @@ _**Disclaimer:** this demo was written directly on an Android smartphone with th
   - use [Conway's Game of Life](https://en.wikipedia.org/wiki/Conway's_Game_of_Life) as a background:
     - use the naive algorithm with iterating and copying of a whole field;
     - ignore outside points;
-    - support for a start delay for populating.
+    - support for a start delay for populating;
+  - automatic horizontal and vertical centering;
+- drawing of the logo (optionally):
+  - automatic horizontal and vertical centering;
+  - fade in and out:
+    - support for a start delay for fading in;
+    - quit at the finish of the fading out.
 
 ## Running
 
