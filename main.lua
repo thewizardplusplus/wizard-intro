@@ -13,13 +13,14 @@ local tick = require("tick")
 
 local UPDATE_PERIOD = 0.25
 local START_DELAY = 1
-local FINISH_DELAY = 1
+local FINISH_DELAY = 0.5
 local MIN_SIDE_CELL_COUNT = love.system.getOS() ~= "Android" and 30 or 25
 local FIELD_FILLING = 0.25
 local CELL_PADDING = 0.1
 local CELL_BORDER = 0.125
 local LOGO_PADDING = 0.1
-local LOGO_FADDING_DURATION = 2
+local LOGO_FADDING_DURATION_ON = 3
+local LOGO_FADDING_DURATION_OFF = 2
 local LOGO_FADDING_START_DELAY = 1
 
 local width
@@ -100,10 +101,10 @@ function _initialize_logo(width, height, mode, prev_logo)
     center:setBorders(logo_padding, logo_padding, logo_padding, logo_padding)
     center:apply()
 
-    logo.fadding = flux.to(logo, LOGO_FADDING_DURATION, { opacity = 1 })
-        :ease("cubicout")
+    logo.fadding = flux.to(logo, LOGO_FADDING_DURATION_ON, { opacity = 1 })
+        :ease("quadout")
         :delay(START_DELAY + LOGO_FADDING_START_DELAY)
-        :after(logo, LOGO_FADDING_DURATION, { opacity = 0 })
+        :after(logo, LOGO_FADDING_DURATION_OFF, { opacity = 0 })
         :oncomplete(function()
             logo.ticker = tick.delay(
                 function()
