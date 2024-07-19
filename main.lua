@@ -23,6 +23,8 @@ local LOGO_FADDING_DURATION_ON = 3
 local LOGO_FADDING_DURATION_OFF = 2
 local LOGO_FADDING_START_DELAY = 1
 
+local show_logo
+
 local width
 local height
 local field
@@ -118,10 +120,14 @@ function _initialize_logo(width, height, mode, prev_logo)
 end
 
 function love.load()
+    show_logo = false
+
     width = love.graphics.getWidth()
     height = love.graphics.getHeight()
     field = _initialize_field(width, height)
-    logo = _initialize_logo(width, height, "loading")
+    if show_logo then
+        logo = _initialize_logo(width, height, "loading")
+    end
     total_dt = 0
 
     love.mouse.setVisible(false)
@@ -160,17 +166,21 @@ function love.draw()
         love.graphics.circle("fill", x, y, radius - field.cell_size * CELL_BORDER)
     end)
 
-    center:start()
-    love.graphics.setColor({1, 1, 1, logo.opacity})
-    love.graphics.draw(logo.image, 0, 0)
-    center:finish()
+    if show_logo then
+        center:start()
+        love.graphics.setColor({1, 1, 1, logo.opacity})
+        love.graphics.draw(logo.image, 0, 0)
+        center:finish()
+    end
 end
 
 function love.resize(new_width, new_height)
     width = new_width
     height = new_height
     field = _initialize_field(width, height, field)
-    _initialize_logo(width, height, "resizing", logo)
+    if show_logo then
+        _initialize_logo(width, height, "resizing", logo)
+    end
     total_dt = 0
 end
 
