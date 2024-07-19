@@ -81,6 +81,12 @@ function _initialize_logo(width, height, mode, prev_logo)
     local logo = prev_logo
     if not logo then
         logo = { opacity = 0 }
+    else
+        logo.opacity = 0
+        logo.fadding:stop()
+        if logo.ticker then
+            logo.ticker:stop()
+        end
     end
 
     if mode == "loading" then
@@ -97,12 +103,12 @@ function _initialize_logo(width, height, mode, prev_logo)
     center:setBorders(logo_padding, logo_padding, logo_padding, logo_padding)
     center:apply()
 
-    flux.to(logo, LOGO_FADDING_DURATION, { opacity = 1 })
+    logo.fadding = flux.to(logo, LOGO_FADDING_DURATION, { opacity = 1 })
         :ease("cubicout")
         :delay(START_DELAY)
         :after(logo, LOGO_FADDING_DURATION, { opacity = 0 })
         :oncomplete(function()
-            tick.delay(
+            logo.ticker = tick.delay(
                 function()
                     love.event.quit()
                 end,
