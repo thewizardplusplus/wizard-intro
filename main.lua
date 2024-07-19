@@ -25,6 +25,7 @@ local width
 local height
 local field
 local logo
+local total_dt
 
 function _initialize_field(width, height, prev_field)
     if prev_field then
@@ -64,12 +65,7 @@ function _initialize_field(width, height, prev_field)
 
     field.ticker = tick.delay(
         function()
-            field.ticker = tick.recur(
-                function()
-                    field.inner_field = life.populate(field.inner_field)
-                end,
-                UPDATE_PERIOD
-            )
+            field.can_be_updated = true
         end,
         START_DELAY
     )
@@ -124,12 +120,23 @@ function love.load()
     height = love.graphics.getHeight()
     field = _initialize_field(width, height)
     logo = _initialize_logo(width, height, "loading")
+    total_dt = 0
 
     love.mouse.setVisible(false)
     love.graphics.setBackgroundColor({0.3, 0.3, 1})
 end
 
 function love.update(dt)
+    total_dt = total_dt + dt
+    -- cannot use the `tick.recur()` function for this due to a slowdown on Android
+    if total_dt > UPDATE_PERIOD then
+        if field.can_be_updated then
+            field.inner_field = life.populate(field.inner_field)
+        end
+
+        total_dt = total_dt - UPDATE_PERIOD
+    end
+
     flux.update(dt)
     tick.update(dt)
 end
@@ -162,6 +169,7 @@ function love.resize(new_width, new_height)
     height = new_height
     field = _initialize_field(width, height, field)
     _initialize_logo(width, height, "resizing", logo)
+    total_dt = 0
 end
 
 function love.keypressed(key)
