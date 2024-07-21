@@ -128,17 +128,19 @@ function _initialize_logo(width, height, mode, prev_logo)
     return logo
 end
 
-function _initialize_box(width, height, box_y, box_height, kind, prev_box)
+function _initialize_box(width, height, font_size, kind, box_y, prev_box)
     if prev_box then
         prev_box.moving:stop()
     end
 
     local min_dimension = math.min(width, height)
 
-    local box_width = width * BOX_WIDTH
     local box_border = min_dimension * BOX_BORDER
     local box_padding = min_dimension * BOX_PADDING
     local box_shadow = min_dimension * BOX_SHADOW
+
+    local box_width = width * BOX_WIDTH
+    local box_height = font_size + 2 * box_border + 2 * box_padding
 
     local box_x
     local box_target_x
@@ -152,7 +154,6 @@ function _initialize_box(width, height, box_y, box_height, kind, prev_box)
         error("unknown kind of the box: " .. kind)
     end
 
-    local font_size = box_height - 2 * box_border - 2 * box_padding
     local font = love.graphics.newFont("resources/Roboto/Roboto-Bold.ttf", font_size)
     local text_box = SYSLText.new("left", {
         font = font,
@@ -190,8 +191,8 @@ function love.load()
         logo = _initialize_logo(width, height, "loading")
     end
     boxes = {
-        _initialize_box(width, height, 100, 50, "left"),
-        _initialize_box(width, height, 200, 50, "right"),
+        _initialize_box(width, height, 38, "left", 100),
+        _initialize_box(width, height, 38, "right", 200),
     }
     total_dt = 0
 
@@ -262,8 +263,8 @@ function love.resize(new_width, new_height)
         _initialize_logo(width, height, "resizing", logo)
     end
     boxes = {
-        _initialize_box(width, height, 100, 50, "left", boxes[1]),
-        _initialize_box(width, height, 200, 50, "right", boxes[2]),
+        _initialize_box(width, height, 38, "left", 100, boxes[1]),
+        _initialize_box(width, height, 38, "right", 200, boxes[2]),
     }
     total_dt = 0
 end
