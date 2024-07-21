@@ -266,7 +266,7 @@ function _find_largest_font_size_ex(width, height, text)
     return font_size
 end
 
-function _initialize_box(width, height, text, font, kind, box_y)
+function _initialize_box(width, height, text, font, kind, box_y, box_above)
     local min_dimension = math.min(width, height)
 
     local box_width = width * BOX_WIDTH
@@ -307,9 +307,14 @@ function _initialize_box(width, height, text, font, kind, box_y)
         text_x = text_x,
     }
 
-    box.moving = flux.to(box, BOX_MOVING_DURATION, { x = box_target_x })
+    if not box_above then
+        box.moving = flux.to(box, BOX_MOVING_DURATION, { x = box_target_x })
+            :delay(START_DELAY + BOX_MOVING_START_DELAY)
+    else
+        box.moving = box_above.moving:after(box, BOX_MOVING_DURATION, { x = box_target_x })
+    end
+    box.moving
         :ease("cubicout")
-        :delay(START_DELAY + BOX_MOVING_START_DELAY)
         :oncomplete(function()
             text_box:send(text)
         end)
@@ -356,12 +361,14 @@ function _initialize_boxes(width, height, text, prev_boxes)
     local boxes = {}
     local box_kind = "left"
     local box_y = box_min_margin
+    local box_above
     for _, line in ipairs(lines) do
-        local box = _initialize_box(width, height, line, font, box_kind, box_y)
+        local box = _initialize_box(width, height, line, font, box_kind, box_y, box_above)
         table.insert(boxes, box)
 
         box_kind = box_kind == "left" and "right" or "left"
         box_y = box_y + box.height + box_shadow + box_margin
+        box_above = box
     end
 
     return boxes
