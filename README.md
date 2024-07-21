@@ -1,6 +1,6 @@
 # Wizard Intro
 
-![](docs/screenshot.png)
+![](docs/screenshot_1.png)
 
 The demo to generate intros for my YouTube channel.
 
@@ -23,7 +23,19 @@ _**Disclaimer:** this demo was written directly on an Android smartphone with th
   - automatic horizontal and vertical centering;
   - fade in and out:
     - support for a start delay for fading in;
-    - quit at the finish of the fading out.
+    - quit at the finish of the fading out;
+- drawing of the text rectangles (optionally):
+  - automatic horizontal and vertical centering;
+  - automatic text splitting into lines:
+    - each line contains as many words as possible;
+    - select the largest possible font size to fit the text on the screen;
+  - animations:
+    - animation of appearing from behind the edge of the screen;
+    - animation of letter-by-letter typing;
+    - common features:
+      - all animations run sequentially one after the other;
+      - support for a start delay for animation;
+      - quit at the finish of the animation.
 
 ## Running
 
