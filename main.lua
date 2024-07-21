@@ -22,6 +22,9 @@ local LOGO_PADDING = 0.1
 local LOGO_FADDING_DURATION_ON = 3
 local LOGO_FADDING_DURATION_OFF = 2
 local LOGO_FADDING_START_DELAY = 1
+local BOX_WIDTH = 1
+local BOX_BORDER = love.system.getOS() ~= "Android" and 0.00375 or 0.00625
+local BOX_SHADOW = love.system.getOS() ~= "Android" and 0.00625 or 0.01375
 
 local show_logo = false
 
@@ -29,6 +32,7 @@ local width
 local height
 local field
 local logo
+local box
 local total_dt
 
 function _initialize_field(width, height, prev_field)
@@ -119,6 +123,23 @@ function _initialize_logo(width, height, mode, prev_logo)
     return logo
 end
 
+function _initialize_box(width, height, box_y, box_height)
+    local min_dimension = math.min(width, height)
+
+    local box_width = width * BOX_WIDTH
+    local box_border = min_dimension * BOX_BORDER
+    local box_shadow = min_dimension * BOX_SHADOW
+
+    return {
+        x = 100,
+        y = box_y,
+        width = box_width,
+        height = box_height,
+        border = box_border,
+        shadow = box_shadow,
+    }
+end
+
 function love.load()
     width = love.graphics.getWidth()
     height = love.graphics.getHeight()
@@ -126,6 +147,7 @@ function love.load()
     if show_logo then
         logo = _initialize_logo(width, height, "loading")
     end
+    box = _initialize_box(width, height, 100, 50)
     total_dt = 0
 
     love.mouse.setVisible(false)
@@ -172,11 +194,11 @@ function love.draw()
     end
 
     love.graphics.setColor({0.2, 0.2, 0.2})
-    love.graphics.rectangle("fill", 100 - 5, 100 + 5, 200, 50)
+    love.graphics.rectangle("fill", box.x - box.shadow, box.y + box.shadow, box.width, box.height)
     love.graphics.setColor({0.2, 0.83, 0.2})
-    love.graphics.rectangle("fill", 100, 100, 200, 50)
+    love.graphics.rectangle("fill", box.x, box.y, box.width, box.height)
     love.graphics.setColor({0.3, 1, 0.3})
-    love.graphics.rectangle("fill", 100 + 2, 100 + 2, 200 - 4, 50 - 4)
+    love.graphics.rectangle("fill", box.x + box.border, box.y + box.border, box.width - 2 * box.border, box.height - 2 * box.border)
 end
 
 function love.resize(new_width, new_height)
@@ -186,6 +208,7 @@ function love.resize(new_width, new_height)
     if show_logo then
         _initialize_logo(width, height, "resizing", logo)
     end
+    box = _initialize_box(width, height, 100, 50)
     total_dt = 0
 end
 
