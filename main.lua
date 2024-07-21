@@ -32,6 +32,7 @@ local BOX_MOVING_DURATION = 0.5
 local BOX_MOVING_START_DELAY = 1
 local BOX_TARGET_X = 0.9
 local MIN_FONT_SIZE = 10
+local MAX_FONT_SIZE = 0.075
 local FONT_SEARCH_STEP = 10
 
 local show_logo = false
@@ -210,10 +211,11 @@ function _find_largest_font_size(width, height, text, min_font_size, font_search
     local box_shadow = min_dimension * BOX_SHADOW
 
     local max_total_box_height = height - 2 * box_min_margin
+    local max_font_size = math.floor(height * MAX_FONT_SIZE)
 
     local prev_font_size
     local font_size = min_font_size
-    while true do
+    while font_size < max_font_size do
         local font = love.graphics.newFont("resources/Roboto/Roboto-Bold.ttf", font_size)
         local lines, err = _split_text_to_lines(width, text, font)
         if err ~= nil then
@@ -250,6 +252,11 @@ function _find_largest_font_size(width, height, text, min_font_size, font_search
         prev_font_size = font_size
         font_size = font_size + font_search_step
     end
+    if not prev_font_size then
+        return nil, "text is too large: the result font size is greater than its maximum"
+    end
+
+    return prev_font_size
 end
 
 function _find_largest_font_size_ex(width, height, text)
@@ -381,8 +388,13 @@ function love.load()
     if show_logo then
         logo = _initialize_logo(width, height, "loading")
     end
-    boxes = _initialize_boxes(width, height, debugging_text)
     total_dt = 0
+
+    local local_boxes, err = _initialize_boxes(width, height, debugging_text)
+    if err ~= nil then
+        error("unable to initialize the boxes: " .. err)
+    end
+    boxes = local_boxes
 
     love.mouse.setVisible(false)
     love.graphics.setBackgroundColor({0.3, 0.3, 1})
@@ -450,8 +462,13 @@ function love.resize(new_width, new_height)
     if show_logo then
         _initialize_logo(width, height, "resizing", logo)
     end
-    boxes = _initialize_boxes(width, height, debugging_text, boxes)
     total_dt = 0
+
+    local local_boxes, err = _initialize_boxes(width, height, debugging_text)
+    if err ~= nil then
+        error("unable to initialize the boxes: " .. err)
+    end
+    boxes = local_boxes
 end
 
 function love.keypressed(key)
