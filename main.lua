@@ -128,6 +128,16 @@ function _initialize_logo(width, height, mode, prev_logo)
     return logo
 end
 
+function _get_text_size(text, font)
+    local text_box = SYSLText.new("left", { font = font })
+    text_box:send(text)
+
+    return {
+        width = text_box.get.width,
+        height = text_box.get.height,
+    }
+end
+
 function _initialize_box(width, height, font_size, kind, box_y, prev_box)
     if prev_box then
         prev_box.moving:stop()
@@ -135,13 +145,11 @@ function _initialize_box(width, height, font_size, kind, box_y, prev_box)
 
     local min_dimension = math.min(width, height)
 
+    local box_width = width * BOX_WIDTH
     local box_border = min_dimension * BOX_BORDER
     local box_padding = min_dimension * BOX_PADDING
     local box_shadow = min_dimension * BOX_SHADOW
-
-    local box_width = width * BOX_WIDTH
-    -- plus one padding at the bottom for letter descenders
-    local box_height = font_size + 2 * box_border + 3 * box_padding
+    local text_x = width * (1 - BOX_TARGET_X)
 
     local box_x
     local box_target_x
@@ -160,7 +168,10 @@ function _initialize_box(width, height, font_size, kind, box_y, prev_box)
         font = font,
         color = {0.2, 0.2, 0.2},
     })
-    local text_x = width * (1 - BOX_TARGET_X)
+
+    local text = "Hello, world!"
+    local text_size = _get_text_size(text, font)
+    local box_height = text_size.height + 2 * box_border + 2 * box_padding
 
     local box = {
         x = box_x,
@@ -178,7 +189,7 @@ function _initialize_box(width, height, font_size, kind, box_y, prev_box)
         :ease("cubicout")
         :delay(START_DELAY + BOX_MOVING_START_DELAY)
         :oncomplete(function()
-            text_box:send("Hello, world!")
+            text_box:send(text)
         end)
 
     return box
