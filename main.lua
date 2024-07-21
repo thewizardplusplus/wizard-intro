@@ -153,11 +153,10 @@ function _initialize_box(width, height, box_y, box_height, kind, prev_box)
     end
 
     local font_size = box_height - 2 * box_border - 2 * box_padding
-    local font = love.graphics.newFont(font_size)
+    local font = love.graphics.newFont("resources/Roboto/Roboto-Bold.ttf", font_size)
     local text_box = SYSLText.new("left", {
         font = font,
         color = {0.2, 0.2, 0.2},
-        autotags = "[b]",
     })
     local text_x = width * (1 - BOX_TARGET_X)
 
