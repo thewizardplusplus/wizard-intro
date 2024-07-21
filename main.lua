@@ -165,19 +165,35 @@ end
 function _split_text_to_lines(width, text, font)
     local max_text_width = width - 2 * width * (1 - BOX_TARGET_X)
 
+    local words = {}
+    for word in string.gmatch(text, "[^%s]+") do
+        table.insert(words, word)
+    end
+
     local lines = {}
     local current_text = ""
-    for word in string.gmatch(text, "[^%s]+") do
-        local extended_text = current_text .. " " .. word
+    local word_index = 1
+    while word_index <= #words do
+        local word = words[word_index]
+
+        if current_text ~= "" then
+            current_text = current_text .. " "
+        end
+        local extended_text = current_text .. word
+
         local text_size = _get_text_size(extended_text, font)
         if text_size.width <= max_text_width then
             current_text = extended_text
+            word_index = word_index + 1
         elseif current_text ~= "" then
             table.insert(lines, current_text)
             current_text = ""
         else
             return nil, "font is too large; word: " .. word
         end
+    end
+    if current_text ~= "" then
+        table.insert(lines, current_text)
     end
 
     return lines
@@ -322,12 +338,12 @@ function love.draw()
 
     -- DEBUGGING START
     local old_font = love.graphics.getFont()
-    local new_font = love.graphics.newFont(10)
+    local new_font = love.graphics.newFont(20)
     love.graphics.setFont(new_font)
 
     for index, line in ipairs(text_lines) do
-        love.graphics.setColor({1, 0, 0})
-        love.graphics.print(line, 10, index * 15)
+        love.graphics.setColor({0, 0, 0})
+        love.graphics.print(line, 10, index * 25)
     end
 
     love.graphics.setFont(old_font)
