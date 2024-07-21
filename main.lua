@@ -335,6 +335,9 @@ function _initialize_boxes(width, height, text, prev_boxes)
             if prev_box.moving then
                 prev_box.moving:stop()
             end
+            if prev_box.ticker then
+                prev_box.ticker:stop()
+            end
         end
     end
 
@@ -380,6 +383,17 @@ function _initialize_boxes(width, height, text, prev_boxes)
         else
             box_above.on_text_end = function()
                 box.start_moving()
+            end
+
+            if index == #lines then
+                box.on_text_end = function()
+                    box.ticker = tick.delay(
+                        function()
+                            love.event.quit()
+                        end,
+                        FINISH_DELAY
+                    )
+                end
             end
         end
 
