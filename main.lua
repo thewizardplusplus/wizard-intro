@@ -30,6 +30,7 @@ local BOX_MIN_MARGIN = love.system.getOS() ~= "Android" and 0.00625 or 0.01375
 local BOX_SHADOW = love.system.getOS() ~= "Android" and 0.00625 or 0.01375
 local BOX_MOVING_DURATION = 0.75
 local BOX_MOVING_START_DELAY = 1
+local BOX_MOVING_FINISH_DELAY = 0.5
 local BOX_TARGET_X = 0.9
 local MIN_FONT_SIZE = 10
 local MAX_FONT_SIZE = 0.075
@@ -370,7 +371,7 @@ function _initialize_boxes(width, height, text, prev_boxes)
                         function()
                             love.event.quit()
                         end,
-                        FINISH_DELAY
+                        FINISH_DELAY + BOX_MOVING_FINISH_DELAY
                     )
                 end
             end
