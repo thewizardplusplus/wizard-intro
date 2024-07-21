@@ -275,7 +275,7 @@ function _find_largest_font_size_ex(width, height, text)
     return font_size
 end
 
-function _initialize_box(width, height, text, font, kind, box_y, box_above)
+function _initialize_box(width, height, text, font, kind, box_y, moving_delay)
     local min_dimension = math.min(width, height)
 
     local box_width = width * BOX_WIDTH
@@ -316,17 +316,15 @@ function _initialize_box(width, height, text, font, kind, box_y, box_above)
         text_x = text_x,
     }
 
-    if not box_above then
+    box.start_moving = function()
         box.moving = flux.to(box, BOX_MOVING_DURATION, { x = box_target_x })
-            :delay(START_DELAY + BOX_MOVING_START_DELAY)
-    else
-        box.moving = box_above.moving:after(box, BOX_MOVING_DURATION, { x = box_target_x })
+            :delay(moving_delay)
+            :ease("cubicout")
+            :oncomplete(function()
+                text_box:send(text)
+                box.is_text_sent = true
+            end)
     end
-    box.moving
-        :ease("cubicout")
-        :oncomplete(function()
-            text_box:send(text)
-        end)
 
     return box
 end
@@ -334,7 +332,9 @@ end
 function _initialize_boxes(width, height, text, prev_boxes)
     if prev_boxes then
         for _, prev_box in ipairs(prev_boxes) do
-            prev_box.moving:stop()
+            if prev_box.moving then
+                prev_box.moving:stop()
+            end
         end
     end
 
@@ -372,8 +372,17 @@ function _initialize_boxes(width, height, text, prev_boxes)
     local box_kind = "left"
     local box_y = total_text_vertical_margin
     local box_above
-    for _, line in ipairs(lines) do
-        local box = _initialize_box(width, height, line, font, box_kind, box_y, box_above)
+    for index, line in ipairs(lines) do
+        local moving_delay = index == 1 and START_DELAY + BOX_MOVING_START_DELAY or 0
+        local box = _initialize_box(width, height, line, font, box_kind, box_y, moving_delay)
+        if index == 1 then
+            box.start_moving()
+        else
+            box_above.on_text_end = function()
+                box.start_moving()
+            end
+        end
+
         table.insert(boxes, box)
 
         box_kind = box_kind == "left" and "right" or "left"
@@ -416,6 +425,10 @@ function love.update(dt)
 
     for _, box in ipairs(boxes) do
         box.text_box:update(dt)
+        if box.is_text_sent and box.text_box:is_finished() and box.on_text_end then
+            box.on_text_end()
+            box.on_text_end = nil
+        end
     end
 
     flux.update(dt)
