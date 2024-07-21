@@ -39,6 +39,30 @@ local field
 local logo
 local boxes
 local total_dt
+-- DEBUGGING START
+local text_lines = {}
+local debugging_text = [[zero
+one
+two
+three
+four
+five
+six
+seven
+eight
+nine
+ten
+eleven
+twelve
+thirteen
+fourteen
+fifteen
+sixteen
+seventeen
+eighteen
+nineteen
+twenty]]
+-- DEBUGGING END
 
 function _initialize_field(width, height, prev_field)
     if prev_field then
@@ -138,6 +162,27 @@ function _get_text_size(text, font)
     }
 end
 
+function _split_text_to_lines(width, text, font)
+    local max_text_width = width - 2 * width * (1 - BOX_TARGET_X)
+
+    local lines = {}
+    local current_text = ""
+    for word in string.gmatch(text, "[^%s]+") do
+        local extended_text = current_text .. " " .. word
+        local text_size = _get_text_size(extended_text, font)
+        if text_size.width <= max_text_width then
+            current_text = extended_text
+        elseif current_text ~= "" then
+            table.insert(lines, current_text)
+            current_text = ""
+        else
+            return nil, "font is too large; word: " .. word
+        end
+    end
+
+    return lines
+end
+
 function _initialize_box(width, height, font_size, kind, box_y, prev_box)
     if prev_box then
         prev_box.moving:stop()
@@ -191,6 +236,15 @@ function _initialize_box(width, height, font_size, kind, box_y, prev_box)
         :oncomplete(function()
             text_box:send(text)
         end)
+
+    -- DEBUGGING START
+    local lines, err = _split_text_to_lines(width, debugging_text, font)
+    if err ~= nil then
+        error(err)
+    end
+
+    text_lines = lines
+    -- DEBUGGING END
 
     return box
 end
@@ -265,6 +319,19 @@ function love.draw()
 
         box.text_box:draw(box.text_x + box.border + box.padding, box.y + box.border + box.padding)
     end
+
+    -- DEBUGGING START
+    local old_font = love.graphics.getFont()
+    local new_font = love.graphics.newFont(10)
+    love.graphics.setFont(new_font)
+
+    for index, line in ipairs(text_lines) do
+        love.graphics.setColor({1, 0, 0})
+        love.graphics.print(line, 10, index * 15)
+    end
+
+    love.graphics.setFont(old_font)
+    -- DEBUGGING END
 end
 
 function love.resize(new_width, new_height)
