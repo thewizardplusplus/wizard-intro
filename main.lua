@@ -204,16 +204,16 @@ end
 function _find_largest_font_size(width, height, text, min_font_size, font_search_step)
     local min_dimension = math.min(width, height)
 
+    local box_border = min_dimension * BOX_BORDER
+    local box_padding = min_dimension * BOX_PADDING
     local box_min_margin = min_dimension * BOX_MIN_MARGIN
     local box_shadow = min_dimension * BOX_SHADOW
 
-    local max_total_text_height = height - 2 * box_min_margin - box_shadow
+    local max_total_box_height = height - 2 * box_min_margin
 
     local prev_font_size
     local font_size = min_font_size
     while true do
-        print("font_size: ", font_size)
-
         local font = love.graphics.newFont("resources/Roboto/Roboto-Bold.ttf", font_size)
         local lines, err = _split_text_to_lines(width, text, font)
         if err ~= nil then
@@ -224,12 +224,13 @@ function _find_largest_font_size(width, height, text, min_font_size, font_search
             return prev_font_size
         end
 
-        local total_text_height = 0
+        local total_box_height = 0
         for _, line in ipairs(lines) do
             local text_size = _get_text_size(line, font)
-            total_text_height = total_text_height + text_size.height
+            local box_height = text_size.height + 2 * box_border + 2 * box_padding
+            total_box_height = total_box_height + box_height + box_shadow
         end
-        if total_text_height > max_total_text_height then
+        if total_box_height > max_total_box_height then
             if not prev_font_size then
                 return nil, "text is too large: the total text height is greater than its maximum"
             end
@@ -237,7 +238,7 @@ function _find_largest_font_size(width, height, text, min_font_size, font_search
             return prev_font_size
         end
 
-        local box_margin = (max_total_text_height - total_text_height) / #lines
+        local box_margin = (max_total_box_height - total_box_height) / (#lines - 1)
         if box_margin < box_min_margin then
             if not prev_font_size then
                 return nil, "text is too large: the box margin is less than its minimum"
