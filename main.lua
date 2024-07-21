@@ -34,6 +34,7 @@ local BOX_TARGET_X = 0.9
 local MIN_FONT_SIZE = 10
 local MAX_FONT_SIZE = 0.075
 local FONT_SEARCH_STEP = 10
+local TOTAL_TEXT_VERTICAL_MARGIN = 0.1
 
 local show_logo = false
 
@@ -210,7 +211,8 @@ function _find_largest_font_size(width, height, text, min_font_size, font_search
     local box_min_margin = min_dimension * BOX_MIN_MARGIN
     local box_shadow = min_dimension * BOX_SHADOW
 
-    local max_total_box_height = height - 2 * box_min_margin
+    local total_text_vertical_margin = height * TOTAL_TEXT_VERTICAL_MARGIN
+    local max_total_box_height = height - 2 * total_text_vertical_margin
     local max_font_size = math.floor(height * MAX_FONT_SIZE)
 
     local prev_font_size
@@ -343,7 +345,8 @@ function _initialize_boxes(width, height, text, prev_boxes)
     local box_min_margin = min_dimension * BOX_MIN_MARGIN
     local box_shadow = min_dimension * BOX_SHADOW
 
-    local max_total_box_height = height - 2 * box_min_margin
+    local total_text_vertical_margin = height * TOTAL_TEXT_VERTICAL_MARGIN
+    local max_total_box_height = height - 2 * total_text_vertical_margin
 
     local font_size, err = _find_largest_font_size_ex(width, height, text)
     if err ~= nil then
@@ -367,7 +370,7 @@ function _initialize_boxes(width, height, text, prev_boxes)
 
     local boxes = {}
     local box_kind = "left"
-    local box_y = box_min_margin
+    local box_y = total_text_vertical_margin
     local box_above
     for _, line in ipairs(lines) do
         local box = _initialize_box(width, height, line, font, box_kind, box_y, box_above)
