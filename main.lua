@@ -38,6 +38,8 @@ local FONT_SEARCH_STEP = 10
 local TOTAL_TEXT_VERTICAL_MARGIN = 0.1
 
 local show_logo = false
+local show_boxes = false
+local text_for_boxes = [[zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty]]
 
 local width
 local height
@@ -45,29 +47,6 @@ local field
 local logo
 local boxes
 local total_dt
--- DEBUGGING START
-local debugging_text = [[zero
-one
-two
-three
-four
-five
-six
-seven
-eight
-nine
-ten
-eleven
-twelve
-thirteen
-fourteen
-fifteen
-sixteen
-seventeen
-eighteen
-nineteen
-twenty]]
--- DEBUGGING END
 
 function _initialize_field(width, height, prev_field)
     if prev_field then
@@ -415,13 +394,15 @@ function love.load()
     if show_logo then
         logo = _initialize_logo(width, height, "loading")
     end
-    total_dt = 0
+    if show_boxes then
+        local local_boxes, err = _initialize_boxes(width, height, text_for_boxes)
+        if err ~= nil then
+            error("unable to initialize the boxes: " .. err)
+        end
 
-    local local_boxes, err = _initialize_boxes(width, height, debugging_text)
-    if err ~= nil then
-        error("unable to initialize the boxes: " .. err)
+        boxes = local_boxes
     end
-    boxes = local_boxes
+    total_dt = 0
 
     love.mouse.setVisible(false)
     love.graphics.setBackgroundColor({0.3, 0.3, 1})
@@ -438,11 +419,13 @@ function love.update(dt)
         total_dt = total_dt - UPDATE_PERIOD
     end
 
-    for _, box in ipairs(boxes) do
-        box.text_box:update(dt)
-        if box.is_text_sent and box.text_box:is_finished() and box.on_text_end then
-            box.on_text_end()
-            box.on_text_end = nil
+    if show_boxes then
+        for _, box in ipairs(boxes) do
+            box.text_box:update(dt)
+            if box.is_text_sent and box.text_box:is_finished() and box.on_text_end then
+                box.on_text_end()
+                box.on_text_end = nil
+            end
         end
     end
 
@@ -474,15 +457,17 @@ function love.draw()
         center:finish()
     end
 
-    for _, box in ipairs(boxes) do
-        love.graphics.setColor({0.2, 0.2, 0.2})
-        love.graphics.rectangle("fill", box.x - box.shadow, box.y + box.shadow, box.width, box.height)
-        love.graphics.setColor({0.2, 0.83, 0.2})
-        love.graphics.rectangle("fill", box.x, box.y, box.width, box.height)
-        love.graphics.setColor({0.3, 1, 0.3})
-        love.graphics.rectangle("fill", box.x + box.border, box.y + box.border, box.width - 2 * box.border, box.height - 2 * box.border)
+    if show_boxes then
+        for _, box in ipairs(boxes) do
+            love.graphics.setColor({0.2, 0.2, 0.2})
+            love.graphics.rectangle("fill", box.x - box.shadow, box.y + box.shadow, box.width, box.height)
+            love.graphics.setColor({0.2, 0.83, 0.2})
+            love.graphics.rectangle("fill", box.x, box.y, box.width, box.height)
+            love.graphics.setColor({0.3, 1, 0.3})
+            love.graphics.rectangle("fill", box.x + box.border, box.y + box.border, box.width - 2 * box.border, box.height - 2 * box.border)
 
-        box.text_box:draw(box.text_x + box.border + box.padding, box.y + box.border + box.padding)
+            box.text_box:draw(box.text_x + box.border + box.padding, box.y + box.border + box.padding)
+        end
     end
 end
 
@@ -493,13 +478,15 @@ function love.resize(new_width, new_height)
     if show_logo then
         _initialize_logo(width, height, "resizing", logo)
     end
-    total_dt = 0
+    if show_boxes then
+        local local_boxes, err = _initialize_boxes(width, height, text_for_boxes, boxes)
+        if err ~= nil then
+            error("unable to initialize the boxes: " .. err)
+        end
 
-    local local_boxes, err = _initialize_boxes(width, height, debugging_text)
-    if err ~= nil then
-        error("unable to initialize the boxes: " .. err)
+        boxes = local_boxes
     end
-    boxes = local_boxes
+    total_dt = 0
 end
 
 function love.keypressed(key)
