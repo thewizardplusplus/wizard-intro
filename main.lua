@@ -266,11 +266,7 @@ function _find_largest_font_size_ex(width, height, text)
     return font_size
 end
 
-function _initialize_box(width, height, font_size, kind, box_y, prev_box)
-    if prev_box then
-        prev_box.moving:stop()
-    end
-
+function _initialize_box(width, height, text, font, kind, box_y)
     local min_dimension = math.min(width, height)
 
     local box_width = width * BOX_WIDTH
@@ -291,15 +287,13 @@ function _initialize_box(width, height, font_size, kind, box_y, prev_box)
         error("unknown kind of the box: " .. kind)
     end
 
-    local font = love.graphics.newFont("resources/Roboto/Roboto-Bold.ttf", font_size)
+    local text_size = _get_text_size(text, font)
+    local box_height = text_size.height + 2 * box_border + 2 * box_padding
+
     local text_box = SYSLText.new("left", {
         font = font,
         color = {0.2, 0.2, 0.2},
     })
-
-    local text = "Hello, world!"
-    local text_size = _get_text_size(text, font)
-    local box_height = text_size.height + 2 * box_border + 2 * box_padding
 
     local box = {
         x = box_x,
@@ -323,6 +317,56 @@ function _initialize_box(width, height, font_size, kind, box_y, prev_box)
     return box
 end
 
+function _initialize_boxes(width, height, text, prev_boxes)
+    if prev_boxes then
+        for _, prev_box in ipairs(prev_boxes) do
+            prev_box.moving:stop()
+        end
+    end
+
+    local min_dimension = math.min(width, height)
+
+    local box_border = min_dimension * BOX_BORDER
+    local box_padding = min_dimension * BOX_PADDING
+    local box_min_margin = min_dimension * BOX_MIN_MARGIN
+    local box_shadow = min_dimension * BOX_SHADOW
+
+    local max_total_box_height = height - 2 * box_min_margin
+
+    local font_size, err = _find_largest_font_size_ex(width, height, text)
+    if err ~= nil then
+        return nil, "unable to find the largest font size: " .. err
+    end
+
+    local font = love.graphics.newFont("resources/Roboto/Roboto-Bold.ttf", font_size)
+    local lines, err = _split_text_to_lines(width, text, font)
+    if err ~= nil then
+        return nil, "unable to split the text to lines: " .. err
+    end
+
+    local total_box_height = 0
+    for _, line in ipairs(lines) do
+        local text_size = _get_text_size(line, font)
+        local box_height = text_size.height + 2 * box_border + 2 * box_padding
+        total_box_height = total_box_height + box_height + box_shadow
+    end
+
+    local box_margin = (max_total_box_height - total_box_height) / (#lines - 1)
+
+    local boxes = {}
+    local box_kind = "left"
+    local box_y = box_min_margin
+    for _, line in ipairs(lines) do
+        local box = _initialize_box(width, height, line, font, box_kind, box_y)
+        table.insert(boxes, box)
+
+        box_kind = box_kind == "left" and "right" or "left"
+        box_y = box_y + box.height + box_shadow + box_margin
+    end
+
+    return boxes
+end
+
 function love.load()
     width = love.graphics.getWidth()
     height = love.graphics.getHeight()
@@ -330,17 +374,7 @@ function love.load()
     if show_logo then
         logo = _initialize_logo(width, height, "loading")
     end
-    -- DEBUGGING START
-    local font_size, err = _find_largest_font_size_ex(width, height, debugging_text)
-    if err ~= nil then
-        error(err)
-    end
-    print("final font size: ", font_size)
-    -- DEBUGGING END
-    boxes = {
-        _initialize_box(width, height, 38, "left", 100),
-        _initialize_box(width, height, 38, "right", 200),
-    }
+    boxes = _initialize_boxes(width, height, debugging_text)
     total_dt = 0
 
     love.mouse.setVisible(false)
@@ -409,17 +443,7 @@ function love.resize(new_width, new_height)
     if show_logo then
         _initialize_logo(width, height, "resizing", logo)
     end
-    -- DEBUGGING START
-    local font_size, err = _find_largest_font_size_ex(width, height, debugging_text)
-    if err ~= nil then
-        error(err)
-    end
-    print("final font size: ", font_size)
-    -- DEBUGGING END
-    boxes = {
-        _initialize_box(width, height, 38, "left", 100, boxes[1]),
-        _initialize_box(width, height, 38, "right", 200, boxes[2]),
-    }
+    boxes = _initialize_boxes(width, height, debugging_text, boxes)
     total_dt = 0
 end
 
