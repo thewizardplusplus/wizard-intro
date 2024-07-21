@@ -23,11 +23,11 @@ local LOGO_FADDING_DURATION_ON = 3
 local LOGO_FADDING_DURATION_OFF = 2
 local LOGO_FADDING_START_DELAY = 1
 local BOX_WIDTH = 1
-local BOX_BORDER = 0.00625
-local BOX_SHADOW = 0.01375
-local BOX_MOVING_DURATION = 2
+local BOX_BORDER = love.system.getOS() ~= "Android" and 0.00375 or 0.00625
+local BOX_SHADOW = love.system.getOS() ~= "Android" and 0.00625 or 0.01375
+local BOX_MOVING_DURATION = 0.75
 local BOX_MOVING_START_DELAY = 1
-local BOX_TARGET_X = 0.75
+local BOX_TARGET_X = 0.9
 
 local show_logo
 
@@ -159,7 +159,7 @@ function _initialize_box(width, height, box_y, box_height, kind, prev_box)
     }
 
     box.moving = flux.to(box, BOX_MOVING_DURATION, { x = box_target_x })
-        :ease("linear")
+        :ease("cubicout")
         :delay(START_DELAY + BOX_MOVING_START_DELAY)
 
     return box
