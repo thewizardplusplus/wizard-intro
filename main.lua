@@ -10,6 +10,7 @@ local life = require("lualife.life")
 local center = require("center")
 local flux = require("flux")
 local tick = require("tick")
+local SYSLText = require("sysl-text")
 
 local UPDATE_PERIOD = 0.25
 local START_DELAY = 1
@@ -24,6 +25,7 @@ local LOGO_FADDING_DURATION_OFF = 2
 local LOGO_FADDING_START_DELAY = 1
 local BOX_WIDTH = 1
 local BOX_BORDER = love.system.getOS() ~= "Android" and 0.00375 or 0.00625
+local BOX_PADDING = love.system.getOS() ~= "Android" and 0.00375 or 0.00625
 local BOX_SHADOW = love.system.getOS() ~= "Android" and 0.00625 or 0.01375
 local BOX_MOVING_DURATION = 0.5
 local BOX_MOVING_START_DELAY = 1
@@ -135,6 +137,7 @@ function _initialize_box(width, height, box_y, box_height, kind, prev_box)
 
     local box_width = width * BOX_WIDTH
     local box_border = min_dimension * BOX_BORDER
+    local box_padding = min_dimension * BOX_PADDING
     local box_shadow = min_dimension * BOX_SHADOW
 
     local box_x
@@ -149,18 +152,33 @@ function _initialize_box(width, height, box_y, box_height, kind, prev_box)
         error("unknown kind of the box: " .. kind)
     end
 
+    local font_size = box_height - 2 * box_border - 2 * box_padding
+    local font = love.graphics.newFont(font_size)
+    local text_box = SYSLText.new("left", {
+        font = font,
+        color = {0.2, 0.2, 0.2},
+        autotags = "[b]",
+    })
+    local text_x = width * (1 - BOX_TARGET_X)
+
     local box = {
         x = box_x,
         y = box_y,
         width = box_width,
         height = box_height,
         border = box_border,
+        padding = box_padding,
         shadow = box_shadow,
+        text_box = text_box,
+        text_x = text_x,
     }
 
     box.moving = flux.to(box, BOX_MOVING_DURATION, { x = box_target_x })
         :ease("cubicout")
         :delay(START_DELAY + BOX_MOVING_START_DELAY)
+        :oncomplete(function()
+            text_box:send("Hello, world!")
+        end)
 
     return box
 end
@@ -191,6 +209,10 @@ function love.update(dt)
         end
 
         total_dt = total_dt - UPDATE_PERIOD
+    end
+
+    for _, box in ipairs(boxes) do
+        box.text_box:update(dt)
     end
 
     flux.update(dt)
@@ -228,6 +250,8 @@ function love.draw()
         love.graphics.rectangle("fill", box.x, box.y, box.width, box.height)
         love.graphics.setColor({0.3, 1, 0.3})
         love.graphics.rectangle("fill", box.x + box.border, box.y + box.border, box.width - 2 * box.border, box.height - 2 * box.border)
+
+        box.text_box:draw(box.text_x + box.border + box.padding, box.y + box.border + box.padding)
     end
 end
 
