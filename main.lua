@@ -140,7 +140,8 @@ function _initialize_box(width, height, font_size, kind, box_y, prev_box)
     local box_shadow = min_dimension * BOX_SHADOW
 
     local box_width = width * BOX_WIDTH
-    local box_height = font_size + 2 * box_border + 2 * box_padding
+    -- plus one padding at the bottom for letter descenders
+    local box_height = font_size + 2 * box_border + 3 * box_padding
 
     local box_x
     local box_target_x
