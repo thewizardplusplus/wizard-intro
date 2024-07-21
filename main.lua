@@ -22,9 +22,12 @@ local LOGO_PADDING = 0.1
 local LOGO_FADDING_DURATION_ON = 3
 local LOGO_FADDING_DURATION_OFF = 2
 local LOGO_FADDING_START_DELAY = 1
-local BOX_WIDTH = 0.5
+local BOX_WIDTH = 1
 local BOX_BORDER = 0.00625
 local BOX_SHADOW = 0.01375
+local BOX_MOVING_DURATION = 2
+local BOX_MOVING_START_DELAY = 1
+local BOX_TARGET_X = 0.75
 
 local show_logo
 
@@ -32,7 +35,7 @@ local width
 local height
 local field
 local logo
-local box
+local boxes
 local total_dt
 
 function _initialize_field(width, height, prev_field)
@@ -123,21 +126,43 @@ function _initialize_logo(width, height, mode, prev_logo)
     return logo
 end
 
-function _initialize_box(width, height, box_y, box_height)
+function _initialize_box(width, height, box_y, box_height, kind, prev_box)
+    if prev_box then
+        prev_box.moving:stop()
+    end
+
     local min_dimension = math.min(width, height)
 
     local box_width = width * BOX_WIDTH
     local box_border = min_dimension * BOX_BORDER
     local box_shadow = min_dimension * BOX_SHADOW
 
-    return {
-        x = 100,
+    local box_x
+    local box_target_x
+    if kind == "left" then
+        box_x = -box_width
+        box_target_x = box_x + width * BOX_TARGET_X
+    elseif kind == "right" then
+        box_x = width + box_shadow
+        box_target_x = box_x - width * BOX_TARGET_X - box_shadow
+    else
+        error("unknown kind of the box: " .. kind)
+    end
+
+    local box = {
+        x = box_x,
         y = box_y,
         width = box_width,
         height = box_height,
         border = box_border,
         shadow = box_shadow,
     }
+
+    box.moving = flux.to(box, BOX_MOVING_DURATION, { x = box_target_x })
+        :ease("linear")
+        :delay(START_DELAY + BOX_MOVING_START_DELAY)
+
+    return box
 end
 
 function love.load()
@@ -149,7 +174,10 @@ function love.load()
     if show_logo then
         logo = _initialize_logo(width, height, "loading")
     end
-    box = _initialize_box(width, height, 100, 50)
+    boxes = {
+        _initialize_box(width, height, 100, 50, "left"),
+        _initialize_box(width, height, 200, 50, "right"),
+    }
     total_dt = 0
 
     love.mouse.setVisible(false)
@@ -195,12 +223,14 @@ function love.draw()
         center:finish()
     end
 
-    love.graphics.setColor({0.2, 0.2, 0.2})
-    love.graphics.rectangle("fill", box.x - box.shadow, box.y + box.shadow, box.width, box.height)
-    love.graphics.setColor({0.2, 0.83, 0.2})
-    love.graphics.rectangle("fill", box.x, box.y, box.width, box.height)
-    love.graphics.setColor({0.3, 1, 0.3})
-    love.graphics.rectangle("fill", box.x + box.border, box.y + box.border, box.width - 2 * box.border, box.height - 2 * box.border)
+    for _, box in ipairs(boxes) do
+        love.graphics.setColor({0.2, 0.2, 0.2})
+        love.graphics.rectangle("fill", box.x - box.shadow, box.y + box.shadow, box.width, box.height)
+        love.graphics.setColor({0.2, 0.83, 0.2})
+        love.graphics.rectangle("fill", box.x, box.y, box.width, box.height)
+        love.graphics.setColor({0.3, 1, 0.3})
+        love.graphics.rectangle("fill", box.x + box.border, box.y + box.border, box.width - 2 * box.border, box.height - 2 * box.border)
+    end
 end
 
 function love.resize(new_width, new_height)
@@ -210,7 +240,10 @@ function love.resize(new_width, new_height)
     if show_logo then
         _initialize_logo(width, height, "resizing", logo)
     end
-    box = _initialize_box(width, height, 100, 50)
+    boxes = {
+        _initialize_box(width, height, 100, 50, "left", boxes[1]),
+        _initialize_box(width, height, 200, 50, "right", boxes[2]),
+    }
     total_dt = 0
 end
 
