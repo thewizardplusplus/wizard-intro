@@ -26,10 +26,13 @@ local LOGO_FADDING_START_DELAY = 1
 local BOX_WIDTH = 1
 local BOX_BORDER = love.system.getOS() ~= "Android" and 0.00375 or 0.00625
 local BOX_PADDING = love.system.getOS() ~= "Android" and 0.00375 or 0.00625
+local BOX_MIN_MARGIN = love.system.getOS() ~= "Android" and 0.00625 or 0.01375
 local BOX_SHADOW = love.system.getOS() ~= "Android" and 0.00625 or 0.01375
 local BOX_MOVING_DURATION = 0.5
 local BOX_MOVING_START_DELAY = 1
 local BOX_TARGET_X = 0.9
+local MIN_FONT_SIZE = 10
+local FONT_SEARCH_STEP = 10
 
 local show_logo = false
 
@@ -40,7 +43,6 @@ local logo
 local boxes
 local total_dt
 -- DEBUGGING START
-local text_lines = {}
 local debugging_text = [[zero
 one
 two
@@ -199,6 +201,71 @@ function _split_text_to_lines(width, text, font)
     return lines
 end
 
+function _find_largest_font_size(width, height, text, min_font_size, font_search_step)
+    local min_dimension = math.min(width, height)
+
+    local box_border = min_dimension * BOX_BORDER
+    local box_padding = min_dimension * BOX_PADDING
+    local box_min_margin = min_dimension * BOX_MIN_MARGIN
+    local box_shadow = min_dimension * BOX_SHADOW
+
+    local max_total_box_height = height - 2 * box_min_margin
+
+    local prev_font_size
+    local font_size = min_font_size
+    while true do
+        local font = love.graphics.newFont("resources/Roboto/Roboto-Bold.ttf", font_size)
+        local lines, err = _split_text_to_lines(width, text, font)
+        if err ~= nil then
+            if not prev_font_size then
+                return nil, "text is too large: unable to split the text to lines: " .. err
+            end
+
+            return prev_font_size
+        end
+
+        local total_box_height = 0
+        for _, line in ipairs(lines) do
+            local text_size = _get_text_size(line, font)
+            local box_height = text_size.height + 2 * box_border + 2 * box_padding
+            total_box_height = total_box_height + box_height + box_shadow
+        end
+        if total_box_height > max_total_box_height then
+            if not prev_font_size then
+                return nil, "text is too large: the total text height is greater than its maximum"
+            end
+
+            return prev_font_size
+        end
+
+        local box_margin = (max_total_box_height - total_box_height) / (#lines - 1)
+        if box_margin < box_min_margin then
+            if not prev_font_size then
+                return nil, "text is too large: the box margin is less than its minimum"
+            end
+
+            return prev_font_size
+        end
+
+        prev_font_size = font_size
+        font_size = font_size + font_search_step
+    end
+end
+
+function _find_largest_font_size_ex(width, height, text)
+    local font_size, err = _find_largest_font_size(width, height, text, MIN_FONT_SIZE, FONT_SEARCH_STEP)
+    if err ~= nil then
+        return nil, "unable to find the largest font size: " .. err
+    end
+
+    font_size, err = _find_largest_font_size(width, height, text, font_size, 1)
+    if err ~= nil then
+        return nil, "unable to find the largest font size (for the second time): " .. err
+    end
+
+    return font_size
+end
+
 function _initialize_box(width, height, font_size, kind, box_y, prev_box)
     if prev_box then
         prev_box.moving:stop()
@@ -253,15 +320,6 @@ function _initialize_box(width, height, font_size, kind, box_y, prev_box)
             text_box:send(text)
         end)
 
-    -- DEBUGGING START
-    local lines, err = _split_text_to_lines(width, debugging_text, font)
-    if err ~= nil then
-        error(err)
-    end
-
-    text_lines = lines
-    -- DEBUGGING END
-
     return box
 end
 
@@ -272,6 +330,13 @@ function love.load()
     if show_logo then
         logo = _initialize_logo(width, height, "loading")
     end
+    -- DEBUGGING START
+    local font_size, err = _find_largest_font_size_ex(width, height, debugging_text)
+    if err ~= nil then
+        error(err)
+    end
+    print("final font size: ", font_size)
+    -- DEBUGGING END
     boxes = {
         _initialize_box(width, height, 38, "left", 100),
         _initialize_box(width, height, 38, "right", 200),
@@ -335,19 +400,6 @@ function love.draw()
 
         box.text_box:draw(box.text_x + box.border + box.padding, box.y + box.border + box.padding)
     end
-
-    -- DEBUGGING START
-    local old_font = love.graphics.getFont()
-    local new_font = love.graphics.newFont(20)
-    love.graphics.setFont(new_font)
-
-    for index, line in ipairs(text_lines) do
-        love.graphics.setColor({0, 0, 0})
-        love.graphics.print(line, 10, index * 25)
-    end
-
-    love.graphics.setFont(old_font)
-    -- DEBUGGING END
 end
 
 function love.resize(new_width, new_height)
@@ -357,6 +409,13 @@ function love.resize(new_width, new_height)
     if show_logo then
         _initialize_logo(width, height, "resizing", logo)
     end
+    -- DEBUGGING START
+    local font_size, err = _find_largest_font_size_ex(width, height, debugging_text)
+    if err ~= nil then
+        error(err)
+    end
+    print("final font size: ", font_size)
+    -- DEBUGGING END
     boxes = {
         _initialize_box(width, height, 38, "left", 100, boxes[1]),
         _initialize_box(width, height, 38, "right", 200, boxes[2]),
