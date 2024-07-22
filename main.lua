@@ -400,6 +400,8 @@ function love.load()
     show_logo = false
     show_boxes = false
 
+    math.randomseed(os.time())
+
     width = love.graphics.getWidth()
     height = love.graphics.getHeight()
     field = _initialize_field(width, height)
