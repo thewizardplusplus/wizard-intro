@@ -19,6 +19,8 @@ local MIN_SIDE_CELL_COUNT = love.system.getOS() ~= "Android" and 30 or 25
 local FIELD_FILLING = 0.25
 local CELL_PADDING = 0.1
 local CELL_BORDER = 0.125
+-- at least 5 s plus allowance
+local FIELD_POPULATING_DURATION = 5.5
 local LOGO_PADDING = 0.1
 local LOGO_FADDING_DURATION_ON = 3
 local LOGO_FADDING_DURATION_OFF = 2
@@ -51,6 +53,7 @@ local total_dt
 function _initialize_field(width, height, prev_field)
     if prev_field then
         prev_field.ticker:stop()
+        prev_field.finish_ticker:stop()
     end
 
     local min_dimension = math.min(width, height)
@@ -89,6 +92,12 @@ function _initialize_field(width, height, prev_field)
             field.can_be_updated = true
         end,
         START_DELAY
+    )
+    field.finish_ticker = tick.delay(
+        function()
+            love.event.quit()
+        end,
+        START_DELAY + FIELD_POPULATING_DURATION
     )
 
     return field
@@ -392,9 +401,13 @@ function love.load()
     height = love.graphics.getHeight()
     field = _initialize_field(width, height)
     if show_logo then
+        field.finish_ticker:stop()
+
         logo = _initialize_logo(width, height, "loading")
     end
     if show_boxes then
+        field.finish_ticker:stop()
+
         local local_boxes, err = _initialize_boxes(width, height, text_for_boxes)
         if err ~= nil then
             error("unable to initialize the boxes: " .. err)
@@ -476,9 +489,13 @@ function love.resize(new_width, new_height)
     height = new_height
     field = _initialize_field(width, height, field)
     if show_logo then
+        field.finish_ticker:stop()
+
         _initialize_logo(width, height, "resizing", logo)
     end
     if show_boxes then
+        field.finish_ticker:stop()
+
         local local_boxes, err = _initialize_boxes(width, height, text_for_boxes, boxes)
         if err ~= nil then
             error("unable to initialize the boxes: " .. err)
