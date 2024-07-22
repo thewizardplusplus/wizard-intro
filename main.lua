@@ -19,9 +19,10 @@ local MIN_SIDE_CELL_COUNT = love.system.getOS() ~= "Android" and 30 or 25
 local FIELD_FILLING = 0.25
 local CELL_PADDING = 0.1
 local CELL_BORDER = 0.125
+local CELL_TRANSPARENT_MODE = true
 -- at least 5 s plus allowance
 local FIELD_POPULATING_DURATION = 5.5
-local FIELD_PALE_MODE = true
+local FIELD_PALE_MODE = false
 local LOGO_PADDING = 0.1
 local LOGO_FADDING_DURATION_ON = 3
 local LOGO_FADDING_DURATION_OFF = 2
@@ -461,11 +462,12 @@ function love.draw()
         local x = point.x * field.cell_size + field.cell_size / 2 + field.x_offset
         local y = point.y * field.cell_size + field.cell_size / 2 + field.y_offset
         local radius = (field.cell_size - field.cell_size * CELL_PADDING) / 2
+        local opacity = CELL_TRANSPARENT_MODE and 0.5 or 1
 
-        love.graphics.setColor({0.85, 0.85, 0.85})
+        love.graphics.setColor({0.85, 0.85, 0.85, opacity})
         love.graphics.circle("fill", x, y, radius)
 
-        love.graphics.setColor({1, 1, 1})
+        love.graphics.setColor({1, 1, 1, opacity})
         love.graphics.circle("fill", x, y, radius - field.cell_size * CELL_BORDER)
     end)
     if FIELD_PALE_MODE then
