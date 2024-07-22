@@ -39,6 +39,7 @@ local MAX_FONT_SIZE = 0.075
 local FONT_SEARCH_STEP = 10
 local TOTAL_TEXT_VERTICAL_MARGIN = 0.1
 
+local use_pale_field_mode = false
 local show_logo = false
 local show_boxes = false
 local text_for_boxes = [[zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty]]
@@ -464,6 +465,10 @@ function love.draw()
         love.graphics.setColor({1, 1, 1})
         love.graphics.circle("fill", x, y, radius - field.cell_size * CELL_BORDER)
     end)
+    if use_pale_field_mode then
+        love.graphics.setColor({1, 1, 1, 0.5})
+        love.graphics.rectangle("fill", 0, 0, width, height)
+    end
 
     if show_logo then
         center:start()
