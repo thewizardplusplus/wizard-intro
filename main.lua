@@ -397,6 +397,8 @@ function _initialize_boxes(width, height, text, prev_boxes)
 end
 
 function love.load()
+    math.randomseed(os.time())
+
     width = love.graphics.getWidth()
     height = love.graphics.getHeight()
     field = _initialize_field(width, height)
