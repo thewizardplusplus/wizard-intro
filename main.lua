@@ -40,6 +40,7 @@ local FONT_SEARCH_STEP = 10
 local TOTAL_TEXT_VERTICAL_MARGIN = 0.1
 
 local use_pale_field_mode = false
+local use_transparent_field_mode = false
 local show_logo = false
 local show_boxes = false
 local text_for_boxes = [[zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty]]
@@ -458,11 +459,12 @@ function love.draw()
         local x = point.x * field.cell_size + field.cell_size / 2 + field.x_offset
         local y = point.y * field.cell_size + field.cell_size / 2 + field.y_offset
         local radius = (field.cell_size - field.cell_size * CELL_PADDING) / 2
+        local opacity = use_transparent_field_mode and 0.5 or 1
 
-        love.graphics.setColor({0.85, 0.85, 0.85})
+        love.graphics.setColor({0.85, 0.85, 0.85, opacity})
         love.graphics.circle("fill", x, y, radius)
 
-        love.graphics.setColor({1, 1, 1})
+        love.graphics.setColor({1, 1, 1, opacity})
         love.graphics.circle("fill", x, y, radius - field.cell_size * CELL_BORDER)
     end)
     if use_pale_field_mode then
