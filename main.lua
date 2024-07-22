@@ -21,6 +21,7 @@ local CELL_PADDING = 0.1
 local CELL_BORDER = 0.125
 -- at least 5 s plus allowance
 local FIELD_POPULATING_DURATION = 5.5
+local FIELD_PALE_MODE = true
 local LOGO_PADDING = 0.1
 local LOGO_FADDING_DURATION_ON = 3
 local LOGO_FADDING_DURATION_OFF = 2
@@ -467,6 +468,10 @@ function love.draw()
         love.graphics.setColor({1, 1, 1})
         love.graphics.circle("fill", x, y, radius - field.cell_size * CELL_BORDER)
     end)
+    if FIELD_PALE_MODE then
+        love.graphics.setColor({1, 1, 1, 0.5})
+        love.graphics.rectangle("fill", 0, 0, width, height)
+    end
 
     if show_logo then
         center:start()
