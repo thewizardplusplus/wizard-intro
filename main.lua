@@ -279,7 +279,8 @@ function _initialize_box(width, height, text, font, kind, box_y, moving_delay)
     local box_border = min_dimension * BOX_BORDER
     local box_padding = min_dimension * BOX_PADDING
     local box_shadow = min_dimension * BOX_SHADOW
-    local text_x = width * (1 - BOX_TARGET_X)
+    local min_text_x = width * (1 - BOX_TARGET_X) + box_border + box_padding
+    local max_text_width = width - 2 * width * (1 - BOX_TARGET_X) - 2 * box_border - 2 * box_padding
 
     local box_x
     local box_target_x
@@ -295,6 +296,7 @@ function _initialize_box(width, height, text, font, kind, box_y, moving_delay)
 
     local text_size = _get_text_size(text, font)
     local box_height = text_size.height + 2 * box_border + 2 * box_padding
+    local text_x = min_text_x + (max_text_width - text_size.width) / 2
 
     local text_box = SYSLText.new("left", {
         font = font,
@@ -501,7 +503,7 @@ function love.draw()
             love.graphics.setColor({0.3, 1, 0.3})
             love.graphics.rectangle("fill", box.x + box.border, box.y + box.border, box.width - 2 * box.border, box.height - 2 * box.border)
 
-            box.text_box:draw(box.text_x + box.border + box.padding, box.y + box.border + box.padding)
+            box.text_box:draw(box.text_x, box.y + box.border + box.padding)
         end
     end
 end
