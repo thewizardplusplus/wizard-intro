@@ -19,7 +19,7 @@ local MIN_SIDE_CELL_COUNT = love.system.getOS() ~= "Android" and 30 or 25
 local FIELD_FILLING = 0.25
 local CELL_PADDING = 0.1
 local CELL_BORDER = 0.125
-local CELL_TRANSPARENT_MODE = true
+local CELL_TRANSPARENT_MODE = false
 -- at least 5 s plus allowance
 local FIELD_POPULATING_DURATION = 5.5
 local FIELD_PALE_MODE = false
@@ -41,8 +41,8 @@ local MAX_FONT_SIZE = 0.075
 local FONT_SEARCH_STEP = 10
 local TOTAL_TEXT_VERTICAL_MARGIN = 0.1
 
-local show_logo
-local show_boxes
+local show_logo = false
+local show_boxes = true
 local text_for_boxes = [[zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty]]
 
 local width
@@ -399,9 +399,6 @@ function _initialize_boxes(width, height, text, prev_boxes)
 end
 
 function love.load()
-    show_logo = false
-    show_boxes = false
-
     math.randomseed(os.time())
 
     width = love.graphics.getWidth()
