@@ -28,7 +28,6 @@ local CELL_TRANSPARENT_MODE = false
 local FIELD_POPULATING_DURATION = 5.5
 local FIELD_PALE_MODE = false
 local LOGO_PADDING = 0.1
-local LOGO_FADDING_DURATION_ON = 3
 local LOGO_FADDING_DURATION_OFF = 2
 local LOGO_FADDING_START_DELAY = 1
 local BOX_WIDTH = 1
@@ -46,8 +45,8 @@ local MAX_FONT_SIZE = 0.075
 local FONT_SEARCH_STEP = 10
 local TOTAL_TEXT_VERTICAL_MARGIN = 0.1
 
-local show_logo = false
-local show_boxes = true
+local show_logo = true
+local show_boxes = false
 local text_for_boxes = [[zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty]]
 
 local width
@@ -126,11 +125,16 @@ function _initialize_logo(width, height, mode, prev_logo)
         if logo.ticker then
             logo.ticker:stop()
         end
+
+        logo.audio:stop()
+        logo.audio:seek(0)
     end
 
     if mode == "loading" then
         logo.image = love.graphics.newImage("resources/logo.png")
         center:setupScreen(logo.image:getPixelWidth(), logo.image:getPixelHeight())
+
+        logo.audio = love.audio.newSource("resources/HeroicIntro/HeroicIntro.wav", "static")
     elseif mode == "resizing" then
         center:resize(width, height)
     else
@@ -142,9 +146,16 @@ function _initialize_logo(width, height, mode, prev_logo)
     center:setBorders(logo_padding, logo_padding, logo_padding, logo_padding)
     center:apply()
 
-    logo.fadding = flux.to(logo, LOGO_FADDING_DURATION_ON, { opacity = 1 })
+    local fadding_duration_on = logo.audio:getDuration()
+    logo.fadding = flux.to(logo, fadding_duration_on, { opacity = 1 })
         :ease("quadout")
         :delay(START_DELAY + LOGO_FADDING_START_DELAY)
+        :onstart(function()
+            logo.audio:play()
+        end)
+        :oncomplete(function()
+            logo.audio:stop()
+        end)
         :after(logo, LOGO_FADDING_DURATION_OFF, { opacity = 0 })
         :oncomplete(function()
             logo.ticker = tick.delay(
