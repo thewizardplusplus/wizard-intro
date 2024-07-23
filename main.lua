@@ -11,6 +11,7 @@ local center = require("center")
 local flux = require("flux")
 local tick = require("tick")
 local SYSLText = require("sysl-text")
+local moonshine = require("moonshine")
 
 local UPDATE_PERIOD = 0.25
 local START_DELAY = 1
@@ -42,6 +43,9 @@ local TOTAL_TEXT_VERTICAL_MARGIN = 0.1
 
 local use_pale_field_mode = false
 local use_transparent_field_mode = false
+local use_blur_field_mode = false
+-- supported effects: boxblur, fastgaussianblur, gaussianblur, glow
+local field_blur_effect = "glow"
 local show_logo = false
 local show_boxes = false
 local text_for_boxes = [[zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty]]
@@ -82,12 +86,18 @@ function _initialize_field(width, height, prev_field)
         y_offset = max_side_offset
     end
 
+    local blur_effect = moonshine.chain(width, height, moonshine.effects[field_blur_effect])
+    if not use_blur_field_mode then
+        blur_effect.disable("boxblur", "fastgaussianblur", "gaussianblur", "glow")
+    end
+
     local inner_field = random.generate(Field:new(field_size), FIELD_FILLING)
     local field = {
         inner_field = inner_field,
         cell_size = cell_size,
         x_offset = x_offset,
         y_offset = y_offset,
+        blur_effect = blur_effect,
     }
 
     field.ticker = tick.delay(
@@ -462,21 +472,25 @@ function love.update(dt)
 end
 
 function love.draw()
-    field.inner_field:map(function(point, contains)
-        if not contains then
-            return
-        end
+    -- reset the foreground color for the blur effect; it's relevant for the following effects: boxblur, fastgaussianblur, and gaussianblur
+    love.graphics.setColor({1, 1, 1})
+    field.blur_effect.draw(function()
+        field.inner_field:map(function(point, contains)
+            if not contains then
+                return
+            end
 
-        local x = point.x * field.cell_size + field.cell_size / 2 + field.x_offset
-        local y = point.y * field.cell_size + field.cell_size / 2 + field.y_offset
-        local radius = (field.cell_size - field.cell_size * CELL_PADDING) / 2
-        local opacity = use_transparent_field_mode and 0.5 or 1
+            local x = point.x * field.cell_size + field.cell_size / 2 + field.x_offset
+            local y = point.y * field.cell_size + field.cell_size / 2 + field.y_offset
+            local radius = (field.cell_size - field.cell_size * CELL_PADDING) / 2
+            local opacity = use_transparent_field_mode and 0.5 or 1
 
-        love.graphics.setColor({0.85, 0.85, 0.85, opacity})
-        love.graphics.circle("fill", x, y, radius)
+            love.graphics.setColor({0.85, 0.85, 0.85, opacity})
+            love.graphics.circle("fill", x, y, radius)
 
-        love.graphics.setColor({1, 1, 1, opacity})
-        love.graphics.circle("fill", x, y, radius - field.cell_size * CELL_BORDER)
+            love.graphics.setColor({1, 1, 1, opacity})
+            love.graphics.circle("fill", x, y, radius - field.cell_size * CELL_BORDER)
+        end)
     end)
     if use_pale_field_mode then
         love.graphics.setColor({1, 1, 1, 0.5})
