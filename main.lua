@@ -320,6 +320,7 @@ function _initialize_box(width, height, text, font, kind, box_y, moving_delay)
     })
 
     local box_audio = love.audio.newSource("resources/SlideOut.mp3", "static")
+    local text_audio = love.audio.newSource("resources/Typing.mp3", "static")
 
     local box = {
         x = box_x,
@@ -332,6 +333,7 @@ function _initialize_box(width, height, text, font, kind, box_y, moving_delay)
         text_box = text_box,
         text_x = text_x,
         box_audio = box_audio,
+        text_audio = text_audio,
     }
 
     local moving_duration = box_audio:getDuration()
@@ -346,6 +348,7 @@ function _initialize_box(width, height, text, font, kind, box_y, moving_delay)
                 box_audio:stop()
 
                 text_box:send(text)
+                text_audio:play()
                 box.is_text_sent = true
             end)
     end
@@ -365,6 +368,9 @@ function _initialize_boxes(width, height, text, prev_boxes)
 
             prev_box.box_audio:stop()
             prev_box.box_audio:release()
+
+            prev_box.text_audio:stop()
+            prev_box.text_audio:release()
         end
     end
 
@@ -483,6 +489,8 @@ function love.update(dt)
         for _, box in ipairs(boxes) do
             box.text_box:update(dt)
             if box.is_text_sent and box.text_box:is_finished() and box.on_text_end then
+                box.text_audio:stop()
+
                 box.on_text_end()
                 box.on_text_end = nil
             end
