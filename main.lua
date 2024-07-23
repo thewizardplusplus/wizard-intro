@@ -176,11 +176,7 @@ function _split_text_to_lines(width, height, text, font)
     local word_index = 1
     while word_index <= #words do
         local word = words[word_index]
-
-        if current_text ~= "" then
-            current_text = current_text .. " "
-        end
-        local extended_text = current_text .. word
+        local extended_text = current_text .. (current_text ~= "" and " " or "") .. word
 
         local text_size = _get_text_size(extended_text, font)
         if text_size.width <= max_text_width then
