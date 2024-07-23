@@ -29,6 +29,7 @@ local BOX_WIDTH = 1
 local BOX_BORDER = love.system.getOS() ~= "Android" and 0.00375 or 0.00625
 local BOX_PADDING = love.system.getOS() ~= "Android" and 0.00375 or 0.00625
 local BOX_MIN_MARGIN = love.system.getOS() ~= "Android" and 0.00625 or 0.01375
+local BOX_MAX_MARGIN = 1.5 * (1 / MIN_SIDE_CELL_COUNT)
 local BOX_SHADOW = love.system.getOS() ~= "Android" and 0.00625 or 0.01375
 local BOX_MOVING_DURATION = 0.5
 local BOX_MOVING_START_DELAY = 1
@@ -337,6 +338,7 @@ function _initialize_boxes(width, height, text, prev_boxes)
     local box_border = min_dimension * BOX_BORDER
     local box_padding = min_dimension * BOX_PADDING
     local box_min_margin = min_dimension * BOX_MIN_MARGIN
+    local box_max_margin = min_dimension * BOX_MAX_MARGIN
     local box_shadow = min_dimension * BOX_SHADOW
 
     local total_text_vertical_margin = height * TOTAL_TEXT_VERTICAL_MARGIN
@@ -361,10 +363,16 @@ function _initialize_boxes(width, height, text, prev_boxes)
     end
 
     local box_margin = (max_total_box_height - total_box_height) / (#lines + 1)
+    if box_margin > box_max_margin then
+        box_margin = box_max_margin
+    end
+
+    local final_total_box_height = total_box_height + box_margin * (#lines + 1)
+    local min_box_y = total_text_vertical_margin + (max_total_box_height - final_total_box_height) / 2
 
     local boxes = {}
     local box_kind = "left"
-    local box_y = total_text_vertical_margin + box_margin
+    local box_y = min_box_y
     local box_above
     for index, line in ipairs(lines) do
         local moving_delay = index == 1 and START_DELAY + BOX_MOVING_START_DELAY or 0
