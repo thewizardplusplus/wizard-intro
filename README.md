@@ -19,6 +19,16 @@ _**Disclaimer:** this demo was written directly on an Android smartphone with th
     - ignore outside points;
     - support for a start delay for populating;
   - automatic horizontal and vertical centering;
+  - quit at a finish of the animation:
+    - for the duration of the animation is taken the minimum duration of the end YouTube screen;
+  - support for the several drawing modes:
+    - pale mode;
+    - transparent mode;
+    - blur mode:
+      - box blur;
+      - fast Gaussian blur;
+      - Gaussian blur;
+      - glow;
 - drawing of the logo (optionally):
   - automatic horizontal and vertical centering;
   - fade in and out:
@@ -26,6 +36,7 @@ _**Disclaimer:** this demo was written directly on an Android smartphone with th
     - quit at the finish of the fading out;
 - drawing of the text rectangles (optionally):
   - automatic horizontal and vertical centering;
+  - align text in the rectangles to the center;
   - automatic text splitting into lines:
     - each line contains as many words as possible;
     - select the largest possible font size to fit the text on the screen;

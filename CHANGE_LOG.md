@@ -1,5 +1,30 @@
 # Change Log
 
+## [v1.2.1](https://github.com/thewizardplusplus/wizard-intro/tree/v1.2.1) (2024-07-24)
+
+Improve drawing of the background and the text rectangles.
+
+- drawing of the background:
+  - quit at a finish of the animation:
+    - for the duration of the animation is taken the minimum duration of the end YouTube screen;
+  - support for the several drawing modes:
+    - pale mode;
+    - transparent mode;
+    - blur mode:
+      - box blur;
+      - fast Gaussian blur;
+      - Gaussian blur;
+      - glow;
+  - tune up the random generator;
+- drawing of the text rectangles:
+  - automatic horizontal and vertical centering:
+    - improve vertical distribution of the rectangles;
+    - restrict the maximal rectangle margin;
+  - align text in the rectangles to the center;
+  - fix the bugs:
+    - remove a trailing space from text lines;
+    - fix the bug with a missing side padding.
+
 ## [v1.2.0](https://github.com/thewizardplusplus/wizard-intro/tree/v1.2.0) (2024-07-22)
 
 Implement the drawing of the text rectangles.
