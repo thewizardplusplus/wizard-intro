@@ -158,8 +158,13 @@ function _get_text_size(text, font)
     }
 end
 
-function _split_text_to_lines(width, text, font)
-    local max_text_width = width - 2 * width * (1 - BOX_TARGET_X)
+function _split_text_to_lines(width, height, text, font)
+    local min_dimension = math.min(width, height)
+
+    local box_border = min_dimension * BOX_BORDER
+    local box_padding = min_dimension * BOX_PADDING
+
+    local max_text_width = width - 2 * width * (1 - BOX_TARGET_X) - 2 * box_border - 2 * box_padding
 
     local words = {}
     for word in string.gmatch(text, "[^%s]+") do
@@ -211,7 +216,7 @@ function _find_largest_font_size(width, height, text, min_font_size, font_search
     local font_size = min_font_size
     while font_size < max_font_size do
         local font = love.graphics.newFont("resources/Roboto/Roboto-Bold.ttf", font_size)
-        local lines, err = _split_text_to_lines(width, text, font)
+        local lines, err = _split_text_to_lines(width, height, text, font)
         if err ~= nil then
             if not prev_font_size then
                 return nil, "text is too large: unable to split the text to lines: " .. err
@@ -350,7 +355,7 @@ function _initialize_boxes(width, height, text, prev_boxes)
     end
 
     local font = love.graphics.newFont("resources/Roboto/Roboto-Bold.ttf", font_size)
-    local lines, err = _split_text_to_lines(width, text, font)
+    local lines, err = _split_text_to_lines(width, height, text, font)
     if err ~= nil then
         return nil, "unable to split the text to lines: " .. err
     end
