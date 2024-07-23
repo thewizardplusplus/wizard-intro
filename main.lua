@@ -31,7 +31,6 @@ local BOX_PADDING = love.system.getOS() ~= "Android" and 0.00375 or 0.00625
 local BOX_MIN_MARGIN = love.system.getOS() ~= "Android" and 0.00625 or 0.01375
 local BOX_MAX_MARGIN = 1.5 * (1 / MIN_SIDE_CELL_COUNT)
 local BOX_SHADOW = love.system.getOS() ~= "Android" and 0.00625 or 0.01375
-local BOX_MOVING_DURATION = 0.5
 local BOX_MOVING_START_DELAY = 1
 local BOX_MOVING_FINISH_DELAY = 0.5
 local BOX_TARGET_X = 0.9
@@ -320,6 +319,8 @@ function _initialize_box(width, height, text, font, kind, box_y, moving_delay)
         color = {0.2, 0.2, 0.2},
     })
 
+    local box_audio = love.audio.newSource("resources/SlideOut.mp3", "static")
+
     local box = {
         x = box_x,
         y = box_y,
@@ -330,13 +331,20 @@ function _initialize_box(width, height, text, font, kind, box_y, moving_delay)
         shadow = box_shadow,
         text_box = text_box,
         text_x = text_x,
+        box_audio = box_audio,
     }
 
+    local moving_duration = box_audio:getDuration()
     box.start_moving = function()
-        box.moving = flux.to(box, BOX_MOVING_DURATION, { x = box_target_x })
+        box.moving = flux.to(box, moving_duration, { x = box_target_x })
             :delay(moving_delay)
             :ease("cubicout")
+            :onstart(function()
+                box_audio:play()
+            end)
             :oncomplete(function()
+                box_audio:stop()
+
                 text_box:send(text)
                 box.is_text_sent = true
             end)
@@ -354,6 +362,9 @@ function _initialize_boxes(width, height, text, prev_boxes)
             if prev_box.ticker then
                 prev_box.ticker:stop()
             end
+
+            prev_box.box_audio:stop()
+            prev_box.box_audio:release()
         end
     end
 
