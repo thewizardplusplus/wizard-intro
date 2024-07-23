@@ -233,7 +233,7 @@ function _find_largest_font_size(width, height, text, min_font_size, font_search
             return prev_font_size
         end
 
-        local box_margin = (max_total_box_height - total_box_height) / (#lines - 1)
+        local box_margin = (max_total_box_height - total_box_height) / (#lines + 1)
         if box_margin < box_min_margin then
             if not prev_font_size then
                 return nil, "text is too large: the box margin is less than its minimum"
@@ -360,11 +360,11 @@ function _initialize_boxes(width, height, text, prev_boxes)
         total_box_height = total_box_height + box_height + box_shadow
     end
 
-    local box_margin = (max_total_box_height - total_box_height) / (#lines - 1)
+    local box_margin = (max_total_box_height - total_box_height) / (#lines + 1)
 
     local boxes = {}
     local box_kind = "left"
-    local box_y = total_text_vertical_margin
+    local box_y = total_text_vertical_margin + box_margin
     local box_above
     for index, line in ipairs(lines) do
         local moving_delay = index == 1 and START_DELAY + BOX_MOVING_START_DELAY or 0
