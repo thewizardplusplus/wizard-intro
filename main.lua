@@ -28,7 +28,7 @@ local CELL_TRANSPARENT_MODE = false
 local FIELD_POPULATING_DURATION = 5.5
 local FIELD_PALE_MODE = false
 local LOGO_PADDING = 0.1
-local LOGO_FADDING_DURATION_OFF = 2
+local LOGO_FADDING_DURATION_OFF = 1
 local LOGO_FADDING_START_DELAY = 1
 local BOX_WIDTH = 1
 local BOX_BORDER = love.system.getOS() ~= "Android" and 0.00375 or 0.00625
@@ -44,8 +44,8 @@ local MAX_FONT_SIZE = 0.075
 local FONT_SEARCH_STEP = 10
 local TOTAL_TEXT_VERTICAL_MARGIN = 0.1
 
-local show_logo = false
-local show_boxes = true
+local show_logo = true
+local show_boxes = false
 local text_for_boxes = [[zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty]]
 
 local width
