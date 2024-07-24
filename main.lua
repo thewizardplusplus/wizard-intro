@@ -34,10 +34,10 @@ local BOX_WIDTH = 1
 local BOX_BORDER = love.system.getOS() ~= "Android" and 0.00375 or 0.00625
 local BOX_PADDING = love.system.getOS() ~= "Android" and 0.00375 or 0.00625
 local BOX_MIN_MARGIN = love.system.getOS() ~= "Android" and 0.00625 or 0.01375
-local BOX_MAX_MARGIN = BOX_MIN_MARGIN * 2
+local BOX_MAX_MARGIN = 1.5 * (1 / MIN_SIDE_CELL_COUNT)
 local BOX_SHADOW = love.system.getOS() ~= "Android" and 0.00625 or 0.01375
 local BOX_MOVING_START_DELAY = 1
-local BOX_MOVING_FINISH_DELAY = 0.5
+local BOX_MOVING_FINISH_DELAY = 1
 local BOX_TARGET_X = 0.9
 local MIN_FONT_SIZE = 10
 local MAX_FONT_SIZE = 0.075
