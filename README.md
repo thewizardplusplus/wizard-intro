@@ -34,6 +34,9 @@ _**Disclaimer:** this demo was written directly on an Android smartphone with th
   - fade in and out:
     - support for a start delay for fading in;
     - quit at the finish of the fading out;
+    - play the sounds during the animation:
+      - play the foreground sound during the fading in;
+      - play the background sound during the fading in and out;
 - drawing of the text rectangles (optionally):
   - automatic horizontal and vertical centering;
   - align text in the rectangles to the center;
@@ -46,7 +49,8 @@ _**Disclaimer:** this demo was written directly on an Android smartphone with th
     - common features:
       - all animations run sequentially one after the other;
       - support for a start delay for animation;
-      - quit at the finish of the animation.
+      - quit at the finish of the animation;
+      - play the separate sound during each animation.
 
 ## Running
 

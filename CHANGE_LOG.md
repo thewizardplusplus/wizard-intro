@@ -1,5 +1,19 @@
 # Change Log
 
+## [v1.3.0](https://github.com/thewizardplusplus/wizard-intro/tree/v1.3.0) (2024-08-11)
+
+Add the sounds to the animations.
+
+- drawing of the logo:
+  - fade in and out:
+    - play the sounds during the animation:
+      - play the foreground sound during the fading in;
+      - play the background sound during the fading in and out;
+- drawing of the text rectangles:
+  - animations:
+    - common features:
+      - play the separate sound during each animation.
+
 ## [v1.2.1](https://github.com/thewizardplusplus/wizard-intro/tree/v1.2.1) (2024-07-24)
 
 Improve drawing of the background and the text rectangles.
