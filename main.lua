@@ -25,6 +25,8 @@ local FIELD_POPULATING_DURATION = 5.5
 local LOGO_PADDING = 0.1
 local LOGO_FADDING_DURATION_OFF = 2
 local LOGO_FADDING_START_DELAY = 1
+local LOGO_FOREGROUND_AUDIO_VOLUME = 0.625
+local LOGO_BACKGROUND_AUDIO_FADDING = 1
 local BOX_WIDTH = 1
 local BOX_BORDER = love.system.getOS() ~= "Android" and 0.00375 or 0.00625
 local BOX_PADDING = love.system.getOS() ~= "Android" and 0.00375 or 0.00625
@@ -127,15 +129,23 @@ function _initialize_logo(width, height, mode, prev_logo)
             logo.ticker:stop()
         end
 
-        logo.audio:stop()
-        logo.audio:seek(0)
+        for _, audio in ipairs(logo.audios) do
+            audio:stop()
+            audio:seek(0)
+        end
     end
 
     if mode == "loading" then
         logo.image = love.graphics.newImage("resources/logo.png")
         center:setupScreen(logo.image:getPixelWidth(), logo.image:getPixelHeight())
 
-        logo.audio = love.audio.newSource("resources/HeroicIntro/HeroicIntro.wav", "static")
+        logo.foreground_audio = love.audio.newSource("resources/BRAAAM/BRAAAM.wav", "static")
+        logo.foreground_audio:setVolume(LOGO_FOREGROUND_AUDIO_VOLUME)
+
+        logo.background_audio = love.audio.newSource("resources/4BarLoop/4BarLoop.wav", "static")
+        logo.background_audio:setLooping(true)
+
+        logo.audios = {logo.foreground_audio, logo.background_audio}
     elseif mode == "resizing" then
         center:resize(width, height)
     else
@@ -147,17 +157,22 @@ function _initialize_logo(width, height, mode, prev_logo)
     center:setBorders(logo_padding, logo_padding, logo_padding, logo_padding)
     center:apply()
 
-    local fadding_duration_on = logo.audio:getDuration()
+    local fadding_duration_on = logo.foreground_audio:getDuration()
     logo.fadding = flux.to(logo, fadding_duration_on, { opacity = 1 })
         :ease("quadout")
         :delay(START_DELAY + LOGO_FADDING_START_DELAY)
         :onstart(function()
-            logo.audio:play()
+            love.audio.play(logo.audios)
         end)
         :oncomplete(function()
-            logo.audio:stop()
+            logo.foreground_audio:stop()
         end)
         :after(logo, LOGO_FADDING_DURATION_OFF, { opacity = 0 })
+        :ease("quadin")
+        :onupdate(function()
+            local background_audio_volume = math.min(logo.opacity * LOGO_BACKGROUND_AUDIO_FADDING, 1)
+            logo.background_audio:setVolume(background_audio_volume)
+        end)
         :oncomplete(function()
             logo.ticker = tick.delay(
                 function()
@@ -165,6 +180,8 @@ function _initialize_logo(width, height, mode, prev_logo)
                 end,
                 FINISH_DELAY
             )
+
+            logo.background_audio:stop()
         end)
 
     return logo

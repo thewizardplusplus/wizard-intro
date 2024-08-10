@@ -1,0 +1,9 @@
+CC BY 4.0
+
+Copyright (C) 2023 Jghoffman418
+
+The `4BarLoop.wav` file is licensed under the Creative Commons Attribution 4.0 Unported License.
+
+You should have received a copy of the license along with this work. If not, see <http://creativecommons.org/licenses/by/4.0/>.
+
+<https://freesound.org/s/706729/>
