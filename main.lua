@@ -478,13 +478,29 @@ function _initialize_ui(width, height, prev_ui_root_components)
         y = 0,
         w = width,
         h = height,
-        layout = "grid 1x1",
+        layout = "grid 3x1",
     })
     grid:add(
         gooi
-            .newButton({ text = "Start" })
+            .newButton({ text = "Background" })
             :onRelease(function()
                 is_menu = false
+                _initialize_scene()
+            end),
+        gooi
+            .newButton({ text = "Logo" })
+            :onRelease(function()
+                show_logo = true
+                is_menu = false
+
+                _initialize_scene()
+            end),
+        gooi
+            .newButton({ text = "Text rectangles" })
+            :onRelease(function()
+                show_boxes = true
+                is_menu = false
+
                 _initialize_scene()
             end)
     )
