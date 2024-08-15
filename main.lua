@@ -120,24 +120,11 @@ function _initialize_field(width, height, prev_field)
     return field
 end
 
-function _initialize_logo(width, height, mode, prev_logo)
+function _initialize_logo(width, height, prev_logo)
     local logo = prev_logo
     if not logo then
         logo = { opacity = 0 }
-    else
-        logo.opacity = 0
-        logo.fadding:stop()
-        if logo.ticker then
-            logo.ticker:stop()
-        end
 
-        for _, audio in ipairs(logo.audios) do
-            audio:stop()
-            audio:seek(0)
-        end
-    end
-
-    if mode == "loading" then
         logo.image = love.graphics.newImage("resources/logo.png")
         center:setupScreen(logo.image:getPixelWidth(), logo.image:getPixelHeight())
 
@@ -148,10 +135,19 @@ function _initialize_logo(width, height, mode, prev_logo)
         logo.background_audio:setLooping(true)
 
         logo.audios = {logo.foreground_audio, logo.background_audio}
-    elseif mode == "resizing" then
-        center:resize(width, height)
     else
-        error("unknown mode of the logo initialization: " .. mode)
+        center:resize(width, height)
+
+        logo.opacity = 0
+        logo.fadding:stop()
+        if logo.ticker then
+            logo.ticker:stop()
+        end
+
+        for _, audio in ipairs(logo.audios) do
+            audio:stop()
+            audio:seek(0)
+        end
     end
 
     local min_dimension = math.min(width, height)
@@ -480,11 +476,41 @@ function _initialize_ui(width, height)
             .newButton({ text = "Start" })
             :onRelease(function()
                 is_menu = false
+                _initialize_scene()
             end)
     )
 
     love.mouse.setVisible(true)
     love.graphics.setBackgroundColor({0.1, 0.1, 0.1})
+end
+
+function _initialize_scene()
+    width = love.graphics.getWidth()
+    height = love.graphics.getHeight()
+
+    field = _initialize_field(width, height, field)
+
+    if show_logo then
+        field.finish_ticker:stop()
+
+        logo = _initialize_logo(width, height, logo)
+    end
+
+    if show_boxes then
+        field.finish_ticker:stop()
+
+        local local_boxes, err = _initialize_boxes(width, height, text_for_boxes, boxes)
+        if err ~= nil then
+            error("unable to initialize the boxes: " .. err)
+        end
+
+        boxes = local_boxes
+    end
+
+    total_dt = 0
+
+    love.mouse.setVisible(false)
+    love.graphics.setBackgroundColor({0.3, 0.3, 1})
 end
 
 function love.load()
@@ -495,28 +521,8 @@ function love.load()
 
     width = love.graphics.getWidth()
     height = love.graphics.getHeight()
-    field = _initialize_field(width, height)
-    if show_logo then
-        field.finish_ticker:stop()
-
-        logo = _initialize_logo(width, height, "loading")
-    end
-    if show_boxes then
-        field.finish_ticker:stop()
-
-        local local_boxes, err = _initialize_boxes(width, height, text_for_boxes)
-        if err ~= nil then
-            error("unable to initialize the boxes: " .. err)
-        end
-
-        boxes = local_boxes
-    end
     _initialize_ui(width, height)
-    total_dt = 0
     is_menu = true
-
-    love.mouse.setVisible(false)
-    love.graphics.setBackgroundColor({0.3, 0.3, 1})
 end
 
 function love.update(dt)
@@ -606,24 +612,7 @@ end
 function love.resize(new_width, new_height)
     width = new_width
     height = new_height
-    field = _initialize_field(width, height, field)
-    if show_logo then
-        field.finish_ticker:stop()
-
-        _initialize_logo(width, height, "resizing", logo)
-    end
-    if show_boxes then
-        field.finish_ticker:stop()
-
-        local local_boxes, err = _initialize_boxes(width, height, text_for_boxes, boxes)
-        if err ~= nil then
-            error("unable to initialize the boxes: " .. err)
-        end
-
-        boxes = local_boxes
-    end
     _initialize_ui(width, height)
-    total_dt = 0
     is_menu = true
 end
 
