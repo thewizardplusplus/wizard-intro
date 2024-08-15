@@ -60,6 +60,7 @@ local box_audio
 local text_audio
 local total_dt
 local is_menu
+local ui_root_components
 
 function _initialize_field(width, height, prev_field)
     if prev_field then
@@ -459,10 +460,18 @@ function _initialize_boxes(width, height, text, prev_boxes)
     return boxes
 end
 
-function _initialize_ui(width, height)
+function _initialize_ui(width, height, prev_ui_root_components)
+    if prev_ui_root_components then
+        for _, ui_root_component in ipairs(prev_ui_root_components) do
+            gooi.removeComponent(ui_root_component)
+        end
+    end
+
     if love.system.getOS() ~= "Android" then
         gooi.desktopMode()
     end
+
+    local ui_root_components = {}
 
     local grid = gooi.newPanel({
         x = 0,
@@ -479,9 +488,12 @@ function _initialize_ui(width, height)
                 _initialize_scene()
             end)
     )
+    table.insert(ui_root_components, grid)
 
     love.mouse.setVisible(true)
     love.graphics.setBackgroundColor({0.1, 0.1, 0.1})
+
+    return ui_root_components
 end
 
 function _initialize_scene()
@@ -521,7 +533,7 @@ function love.load()
 
     width = love.graphics.getWidth()
     height = love.graphics.getHeight()
-    _initialize_ui(width, height)
+    ui_root_components = _initialize_ui(width, height)
     is_menu = true
 end
 
@@ -612,7 +624,7 @@ end
 function love.resize(new_width, new_height)
     width = new_width
     height = new_height
-    _initialize_ui(width, height)
+    ui_root_components = _initialize_ui(width, height, ui_root_components)
     is_menu = true
 end
 
