@@ -12,6 +12,7 @@ local flux = require("flux")
 local tick = require("tick")
 local SYSLText = require("sysl-text")
 local moonshine = require("moonshine")
+require("gooi")
 
 local UPDATE_PERIOD = 0.25
 local START_DELAY = 1
@@ -58,6 +59,7 @@ local boxes
 local box_audio
 local text_audio
 local total_dt
+local is_menu
 
 function _initialize_field(width, height, prev_field)
     if prev_field then
@@ -461,6 +463,30 @@ function _initialize_boxes(width, height, text, prev_boxes)
     return boxes
 end
 
+function _initialize_ui(width, height)
+    if love.system.getOS() ~= "Android" then
+        gooi.desktopMode()
+    end
+
+    local grid = gooi.newPanel({
+        x = 0,
+        y = 0,
+        w = width,
+        h = height,
+        layout = "grid 1x1",
+    })
+    grid:add(
+        gooi
+            .newButton({ text = "Start" })
+            :onRelease(function()
+                is_menu = false
+            end)
+    )
+
+    love.mouse.setVisible(true)
+    love.graphics.setBackgroundColor({0.1, 0.1, 0.1})
+end
+
 function love.load()
     math.randomseed(os.time())
 
@@ -485,13 +511,20 @@ function love.load()
 
         boxes = local_boxes
     end
+    _initialize_ui(width, height)
     total_dt = 0
+    is_menu = true
 
     love.mouse.setVisible(false)
     love.graphics.setBackgroundColor({0.3, 0.3, 1})
 end
 
 function love.update(dt)
+    if is_menu then
+        gooi.update(dt)
+        return
+    end
+
     total_dt = total_dt + dt
     -- cannot use the `tick.recur()` function for this due to a slowdown on Android
     if total_dt > UPDATE_PERIOD then
@@ -519,6 +552,11 @@ function love.update(dt)
 end
 
 function love.draw()
+    if is_menu then
+        gooi.draw()
+        return
+    end
+
     -- reset the foreground color for the blur effect; it's relevant for the following effects: boxblur, fastgaussianblur, and gaussianblur
     love.graphics.setColor({1, 1, 1})
     field.blur_effect.draw(function()
@@ -584,11 +622,31 @@ function love.resize(new_width, new_height)
 
         boxes = local_boxes
     end
+    _initialize_ui(width, height)
     total_dt = 0
+    is_menu = true
 end
 
-function love.keypressed(key)
+function love.keypressed(key, scancode)
     if key == "escape" then
         love.event.quit()
     end
+
+    gooi.keypressed(key, scancode)
+end
+
+function love.keyreleased(key, scancode)
+    gooi.keyreleased(key, scancode)
+end
+
+function love.textinput(text)
+    gooi.textinput(text)
+end
+
+function love.mousepressed()
+    gooi.pressed()
+end
+
+function love.mousereleased()
+    gooi.released()
 end
