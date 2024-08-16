@@ -63,6 +63,7 @@ local text_audio
 local total_dt
 local is_menu
 local ui_root_components
+local ui_selected_app_mode
 
 function _initialize_field(width, height, prev_field)
     if prev_field then
@@ -478,38 +479,63 @@ function _initialize_ui(width, height, prev_ui_root_components)
 
     local ui_root_components = {}
 
-    local grid = gooi.newPanel({
+    local main_menu_grid = gooi.newPanel({
         x = (width - menu_width) / 2,
         y = (height - menu_height) / 2,
         w = menu_width,
         h = menu_height,
         layout = "grid 3x1",
+        group = "main-menu",
     })
-    grid:add(
+    main_menu_grid:add(
         gooi
             .newButton({ text = "Background" })
             :onRelease(function()
-                is_menu = false
-                _initialize_scene()
+                ui_selected_app_mode = "background"
+
+                gooi.setGroupVisible("main-menu", false)
+                gooi.setGroupVisible("field-settings", true)
             end),
         gooi
             .newButton({ text = "Logo" })
             :onRelease(function()
-                show_logo = true
-                is_menu = false
+                ui_selected_app_mode = "logo"
 
-                _initialize_scene()
+                gooi.setGroupVisible("main-menu", false)
+                gooi.setGroupVisible("field-settings", true)
             end),
         gooi
             .newButton({ text = "Text rectangles" })
             :onRelease(function()
-                show_boxes = true
+                ui_selected_app_mode = "text-rectangles"
+
+                gooi.setGroupVisible("main-menu", false)
+                gooi.setGroupVisible("field-settings", true)
+            end)
+    )
+    table.insert(ui_root_components, main_menu_grid)
+
+    local field_settings_grid = gooi.newPanel({
+        x = (width - menu_width) / 2,
+        y = (height - menu_height) / 2,
+        w = menu_width,
+        h = menu_height,
+        layout = "grid 8x1",
+        group = "field-settings",
+    })
+    field_settings_grid:add(
+        gooi
+            .newButton({ text = "Start" })
+            :onRelease(function()
+                show_logo = ui_selected_app_mode == "logo"
+                show_boxes = ui_selected_app_mode == "text-rectangles"
                 is_menu = false
 
                 _initialize_scene()
             end)
     )
-    table.insert(ui_root_components, grid)
+    gooi.setGroupVisible("field-settings", false)
+    table.insert(ui_root_components, field_settings_grid)
 
     love.mouse.setVisible(true)
     love.graphics.setBackgroundColor({0.1, 0.1, 0.1})
