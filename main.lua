@@ -41,6 +41,8 @@ local MIN_FONT_SIZE = 10
 local MAX_FONT_SIZE = 0.075
 local FONT_SEARCH_STEP = 10
 local TOTAL_TEXT_VERTICAL_MARGIN = 0.1
+local MENU_WIDTH = 0.75
+local MENU_HEIGHT = 0.5
 
 local use_pale_field_mode = false
 local use_transparent_field_mode = false
@@ -467,6 +469,9 @@ function _initialize_ui(width, height, prev_ui_root_components)
         end
     end
 
+    local menu_width = width * MENU_WIDTH
+    local menu_height = height * MENU_HEIGHT
+
     if love.system.getOS() ~= "Android" then
         gooi.desktopMode()
     end
@@ -474,10 +479,10 @@ function _initialize_ui(width, height, prev_ui_root_components)
     local ui_root_components = {}
 
     local grid = gooi.newPanel({
-        x = 0,
-        y = 0,
-        w = width,
-        h = height,
+        x = (width - menu_width) / 2,
+        y = (height - menu_height) / 2,
+        w = menu_width,
+        h = menu_height,
         layout = "grid 3x1",
     })
     grid:add(
