@@ -51,7 +51,7 @@ local use_blur_field_mode = false
 local field_blur_effect = "glow"
 local show_logo = false
 local show_boxes = false
-local text_for_boxes = [[zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty]]
+local text_for_boxes = ""
 
 local width
 local height
@@ -598,6 +598,8 @@ function _initialize_ui(width, height, prev_ui_root_components)
     gooi.setGroupVisible("field-settings", false)
     table.insert(ui_root_components, field_settings_grid)
 
+    local text_for_boxes_input = gooi.newText({ text = "Hello, World!" })
+
     local boxes_settings_grid = gooi.newPanel({
         x = (width - menu_width) / 2,
         y = (height - menu_height) / 2,
@@ -607,11 +609,15 @@ function _initialize_ui(width, height, prev_ui_root_components)
         group = "boxes-settings",
     })
     boxes_settings_grid:add(
+        text_for_boxes_input,
         gooi
             .newButton({ text = "Start" })
             :onRelease(function()
                 show_logo = ui_selected_app_mode == "logo"
                 show_boxes = ui_selected_app_mode == "text-rectangles"
+
+                text_for_boxes = text_for_boxes_input:getText()
+
                 is_menu = false
 
                 _initialize_scene()
