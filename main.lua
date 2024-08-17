@@ -440,16 +440,16 @@ function _initialize_boxes(width, height, text, prev_boxes)
             box_above.on_text_end = function()
                 box.start_moving()
             end
+        end
 
-            if index == #lines then
-                box.on_text_end = function()
-                    box.ticker = tick.delay(
-                        function()
-                            love.event.quit()
-                        end,
-                        FINISH_DELAY + BOX_MOVING_FINISH_DELAY
-                    )
-                end
+        if index == #lines then
+            box.on_text_end = function()
+                box.ticker = tick.delay(
+                    function()
+                        love.event.quit()
+                    end,
+                    FINISH_DELAY + BOX_MOVING_FINISH_DELAY
+                )
             end
         end
 
