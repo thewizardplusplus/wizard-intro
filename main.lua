@@ -581,6 +581,13 @@ function _initialize_ui(width, height, prev_ui_root_components)
                     field_blur_effect = "glow"
                 end
 
+                if ui_selected_app_mode == "text-rectangles" then
+                    gooi.setGroupVisible("field-settings", false)
+                    gooi.setGroupVisible("boxes-settings", true)
+
+                    return
+                end
+
                 show_logo = ui_selected_app_mode == "logo"
                 show_boxes = ui_selected_app_mode == "text-rectangles"
                 is_menu = false
@@ -590,6 +597,28 @@ function _initialize_ui(width, height, prev_ui_root_components)
     )
     gooi.setGroupVisible("field-settings", false)
     table.insert(ui_root_components, field_settings_grid)
+
+    local boxes_settings_grid = gooi.newPanel({
+        x = (width - menu_width) / 2,
+        y = (height - menu_height) / 2,
+        w = menu_width,
+        h = menu_height,
+        layout = "grid 2x1",
+        group = "boxes-settings",
+    })
+    boxes_settings_grid:add(
+        gooi
+            .newButton({ text = "Start" })
+            :onRelease(function()
+                show_logo = ui_selected_app_mode == "logo"
+                show_boxes = ui_selected_app_mode == "text-rectangles"
+                is_menu = false
+
+                _initialize_scene()
+            end)
+    )
+    gooi.setGroupVisible("boxes-settings", false)
+    table.insert(ui_root_components, boxes_settings_grid)
 
     love.mouse.setVisible(true)
     love.graphics.setBackgroundColor({0.1, 0.1, 0.1})
