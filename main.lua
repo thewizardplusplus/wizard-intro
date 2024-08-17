@@ -515,9 +515,38 @@ function _initialize_ui(width, height, prev_ui_root_components)
     )
     table.insert(ui_root_components, main_menu_grid)
 
+    local boxblur_effect_check = gooi.newRadio({ text = "> Box", radioGroup = "field-effect" })
+    boxblur_effect_check:setEnabled(false)
+
+    local fastgaussianblur_effect_check = gooi.newRadio({ text = "> Fast Gaussian", radioGroup = "field-effect" })
+    fastgaussianblur_effect_check:setEnabled(false)
+
+    local gaussianblur_effect_check = gooi.newRadio({ text = "> Gaussian", radioGroup = "field-effect" })
+    gaussianblur_effect_check:setEnabled(false)
+
+    local glow_effect_check = gooi.newRadio({ text = "> Glow", radioGroup = "field-effect" })
+    glow_effect_check:setEnabled(false)
+
+    if field_blur_effect == "boxblur" then
+        boxblur_effect_check:select()
+    elseif field_blur_effect == "fastgaussianblur" then
+        fastgaussianblur_effect_check:select()
+    elseif field_blur_effect == "gaussianblur" then
+        gaussianblur_effect_check:select()
+    else
+        glow_effect_check:select()
+    end
+
     local pale_mode_check = gooi.newCheck({ text = "Pale" })
     local transparent_mode_check = gooi.newCheck({ text = "Transparent" })
     local blur_mode_check = gooi.newCheck({ text = "Blur" })
+    blur_mode_check:onRelease(function()
+        local is_checked = blur_mode_check.checked
+        boxblur_effect_check:setEnabled(is_checked)
+        fastgaussianblur_effect_check:setEnabled(is_checked)
+        gaussianblur_effect_check:setEnabled(is_checked)
+        glow_effect_check:setEnabled(is_checked)
+    end)
 
     local field_settings_grid = gooi.newPanel({
         x = (width - menu_width) / 2,
@@ -531,12 +560,26 @@ function _initialize_ui(width, height, prev_ui_root_components)
         pale_mode_check,
         transparent_mode_check,
         blur_mode_check,
+        boxblur_effect_check,
+        fastgaussianblur_effect_check,
+        gaussianblur_effect_check,
+        glow_effect_check,
         gooi
             .newButton({ text = "Start" })
             :onRelease(function()
                 use_pale_field_mode = pale_mode_check.checked
                 use_transparent_field_mode = transparent_mode_check.checked
                 use_blur_field_mode = blur_mode_check.checked
+
+                if boxblur_effect_check.selected then
+                    field_blur_effect = "boxblur"
+                elseif fastgaussianblur_effect_check.selected then
+                    field_blur_effect = "fastgaussianblur"
+                elseif gaussianblur_effect_check.selected then
+                    field_blur_effect = "gaussianblur"
+                else
+                    field_blur_effect = "glow"
+                end
 
                 show_logo = ui_selected_app_mode == "logo"
                 show_boxes = ui_selected_app_mode == "text-rectangles"
