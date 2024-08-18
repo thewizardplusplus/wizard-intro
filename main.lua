@@ -43,6 +43,7 @@ local FONT_SEARCH_STEP = 10
 local TOTAL_TEXT_VERTICAL_MARGIN = 0.1
 local MENU_WIDTH = 0.75
 local MENU_HEIGHT = 0.5
+local UI_FONT_SIZE = 0.05
 
 local use_pale_field_mode = false
 local use_transparent_field_mode = false
@@ -470,12 +471,20 @@ function _initialize_ui(width, height, prev_ui_root_components)
         end
     end
 
+    local min_dimension = math.min(width, height)
+
     local menu_width = width * MENU_WIDTH
     local menu_height = height * MENU_HEIGHT
+    local ui_font_size = min_dimension * UI_FONT_SIZE
 
     if love.system.getOS() ~= "Android" then
         gooi.desktopMode()
     end
+
+    local ui_font = love.graphics.newFont("resources/Roboto/Roboto-Regular.ttf", ui_font_size)
+    gooi.setStyle({
+        font = ui_font,
+    })
 
     local ui_root_components = {}
 
