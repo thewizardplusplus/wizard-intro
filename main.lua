@@ -253,7 +253,7 @@ function _find_largest_font_size(width, height, text, min_font_size, font_search
 
     local prev_font_size
     local font_size = min_font_size
-    while font_size < max_font_size do
+    while font_size <= max_font_size do
         local font = love.graphics.newFont("resources/Roboto/Roboto-Bold.ttf", font_size)
         local lines, err = _split_text_to_lines(width, height, text, font)
         if err ~= nil then
@@ -278,13 +278,16 @@ function _find_largest_font_size(width, height, text, min_font_size, font_search
             return prev_font_size
         end
 
-        local box_margin = (max_total_box_height - total_box_height) / (#lines + 1)
-        if box_margin < box_min_margin then
-            if not prev_font_size then
-                return nil, "text is too large: the box margin is less than its minimum"
-            end
+        local box_margin = 0
+        if #lines > 1 then
+            box_margin = (max_total_box_height - total_box_height) / (#lines - 1)
+            if box_margin < box_min_margin then
+                if not prev_font_size then
+                    return nil, "text is too large: the box margin is less than its minimum"
+                end
 
-            return prev_font_size
+                return prev_font_size
+            end
         end
 
         prev_font_size = font_size
@@ -318,6 +321,7 @@ function _initialize_box(width, height, text, font, kind, box_y, moving_delay)
     local box_border = min_dimension * BOX_BORDER
     local box_padding = min_dimension * BOX_PADDING
     local box_shadow = min_dimension * BOX_SHADOW
+
     local min_text_x = width * (1 - BOX_TARGET_X) + box_border + box_padding
     local max_text_width = width - 2 * width * (1 - BOX_TARGET_X) - 2 * box_border - 2 * box_padding
 
@@ -421,12 +425,15 @@ function _initialize_boxes(width, height, text, prev_boxes)
         total_box_height = total_box_height + box_height + box_shadow
     end
 
-    local box_margin = (max_total_box_height - total_box_height) / (#lines + 1)
-    if box_margin > box_max_margin then
-        box_margin = box_max_margin
+    local box_margin = 0
+    if #lines > 1 then
+        box_margin = (max_total_box_height - total_box_height) / (#lines - 1)
+        if box_margin > box_max_margin then
+            box_margin = box_max_margin
+        end
     end
 
-    local final_total_box_height = total_box_height + box_margin * (#lines + 1)
+    local final_total_box_height = total_box_height + box_margin * (#lines - 1)
     local min_box_y = total_text_vertical_margin + (max_total_box_height - final_total_box_height) / 2
 
     local boxes = {}
