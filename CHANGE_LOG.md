@@ -1,5 +1,17 @@
 # Change Log
 
+## [v1.4.0](https://github.com/thewizardplusplus/wizard-intro/tree/v1.4.0) (2024-08-19)
+
+Add menu and settings and fix the bugs with drawing of the text rectangles.
+
+- drawing of the text rectangles:
+  - fix the bug with infinite animation and sound if there is only one text rectangle;
+  - fix the bug with a doubled gap after the last text rectangle;
+- menu and settings:
+  - main menu allows to choose between the general drawing modes (see above);
+  - background settings allow to choose between the background drawing modes (see above);
+  - text rectangle settings allow to set the text to be displayed.
+
 ## [v1.3.0](https://github.com/thewizardplusplus/wizard-intro/tree/v1.3.0) (2024-08-11)
 
 Add the sounds to the animations.

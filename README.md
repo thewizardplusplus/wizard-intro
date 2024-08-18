@@ -50,7 +50,11 @@ _**Disclaimer:** this demo was written directly on an Android smartphone with th
       - all animations run sequentially one after the other;
       - support for a start delay for animation;
       - quit at the finish of the animation;
-      - play the separate sound during each animation.
+      - play the separate sound during each animation;
+- menu and settings:
+  - main menu allows to choose between the general drawing modes (see above);
+  - background settings allow to choose between the background drawing modes (see above);
+  - text rectangle settings allow to set the text to be displayed.
 
 ## Running
 
