@@ -16,7 +16,6 @@ require("gooi")
 
 local UPDATE_PERIOD = 0.25
 local START_DELAY = 1
-local FINISH_DELAY = 0.5
 local MIN_SIDE_CELL_COUNT = love.system.getOS() ~= "Android" and 30 or 25
 local FIELD_FILLING = 0.25
 local CELL_PADDING = 0.1
@@ -24,8 +23,9 @@ local CELL_BORDER = 0.125
 -- at least 5 s plus allowance
 local FIELD_POPULATING_DURATION = 5.5
 local LOGO_PADDING = 0.1
-local LOGO_FADDING_DURATION_OFF = 2
 local LOGO_FADDING_START_DELAY = 1
+local LOGO_FADDING_FINISH_DELAY = 0.5
+local LOGO_FADDING_DURATION_OFF = 1.75
 local LOGO_FOREGROUND_AUDIO_VOLUME = 0.625
 local LOGO_BACKGROUND_AUDIO_FADDING = 1
 local BOX_WIDTH = 1
@@ -35,7 +35,7 @@ local BOX_MIN_MARGIN = love.system.getOS() ~= "Android" and 0.00625 or 0.01375
 local BOX_MAX_MARGIN = 1.5 * (1 / MIN_SIDE_CELL_COUNT)
 local BOX_SHADOW = love.system.getOS() ~= "Android" and 0.00625 or 0.01375
 local BOX_MOVING_START_DELAY = 1
-local BOX_MOVING_FINISH_DELAY = 0.5
+local BOX_MOVING_FINISH_DELAY = 1.5
 local BOX_TARGET_X = 0.9
 local MIN_FONT_SIZE = 10
 local MAX_FONT_SIZE = 0.075
@@ -182,7 +182,7 @@ function _initialize_logo(width, height, prev_logo)
                 function()
                     love.event.quit()
                 end,
-                FINISH_DELAY
+                LOGO_FADDING_FINISH_DELAY
             )
 
             logo.background_audio:stop()
@@ -457,7 +457,7 @@ function _initialize_boxes(width, height, text, prev_boxes)
                     function()
                         love.event.quit()
                     end,
-                    FINISH_DELAY + BOX_MOVING_FINISH_DELAY
+                    BOX_MOVING_FINISH_DELAY
                 )
             end
         end
