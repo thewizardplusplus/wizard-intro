@@ -44,6 +44,7 @@ local TOTAL_TEXT_VERTICAL_MARGIN = 0.1
 local MENU_WIDTH = 0.75
 local MENU_HEIGHT = 0.5
 local UI_FONT_SIZE = 0.05
+local TEXT_INPUT_COUNT = 5
 
 local use_pale_field_mode = false
 local use_transparent_field_mode = false
@@ -607,25 +608,37 @@ function _initialize_ui(width, height, prev_ui_root_components)
     gooi.setGroupVisible("field-settings", false)
     table.insert(ui_root_components, field_settings_grid)
 
-    local text_for_boxes_input = gooi.newText({ text = "Hello, World!" })
+    local text_for_boxes_inputs = {}
+    for index = 1, TEXT_INPUT_COUNT do
+        local text_for_boxes_input = gooi.newText({ text = index == 1 and "Hello, World!" or "" })
+        table.insert(text_for_boxes_inputs, text_for_boxes_input)
+    end
 
     local boxes_settings_grid = gooi.newPanel({
         x = (width - menu_width) / 2,
         y = (height - menu_height) / 2,
         w = menu_width,
         h = menu_height,
-        layout = "grid 2x1",
+        layout = string.format("grid %dx1", TEXT_INPUT_COUNT + 1),
         group = "boxes-settings",
     })
+    for _, text_for_boxes_input in ipairs(text_for_boxes_inputs) do
+        boxes_settings_grid:add(text_for_boxes_input)
+    end
     boxes_settings_grid:add(
-        text_for_boxes_input,
         gooi
             .newButton({ text = "Start" })
             :onRelease(function()
                 show_logo = ui_selected_app_mode == "logo"
                 show_boxes = ui_selected_app_mode == "text-rectangles"
 
-                text_for_boxes = text_for_boxes_input:getText()
+                text_for_boxes = ""
+                for _, text_for_boxes_input in ipairs(text_for_boxes_inputs) do
+                    local text_part = text_for_boxes_input:getText()
+                    if text_part ~= "" then
+                        text_for_boxes = text_for_boxes .. (text_for_boxes ~= "" and " " or "") .. text_part
+                    end
+                end
 
                 is_menu = false
 
