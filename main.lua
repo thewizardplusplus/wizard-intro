@@ -67,7 +67,7 @@ local is_menu
 local ui_root_components
 local ui_selected_app_mode
 
-function _initialize_field(width, height, prev_field)
+local function _initialize_field(width, height, prev_field)
     if prev_field then
         prev_field.ticker:stop()
         prev_field.finish_ticker:stop()
@@ -126,7 +126,7 @@ function _initialize_field(width, height, prev_field)
     return field
 end
 
-function _initialize_logo(width, height, prev_logo)
+local function _initialize_logo(width, height, prev_logo)
     local logo = prev_logo
     if not logo then
         logo = { opacity = 0 }
@@ -191,7 +191,7 @@ function _initialize_logo(width, height, prev_logo)
     return logo
 end
 
-function _get_text_size(text, font)
+local function _get_text_size(text, font)
     local text_box = SYSLText.new("left", { font = font })
     text_box:send(text)
 
@@ -201,7 +201,7 @@ function _get_text_size(text, font)
     }
 end
 
-function _split_text_to_lines(width, height, text, font)
+local function _split_text_to_lines(width, height, text, font)
     local min_dimension = math.min(width, height)
 
     local box_border = min_dimension * BOX_BORDER
@@ -239,7 +239,7 @@ function _split_text_to_lines(width, height, text, font)
     return lines
 end
 
-function _find_largest_font_size(width, height, text, min_font_size, font_search_step)
+local function _find_largest_font_size(width, height, text, min_font_size, font_search_step)
     local min_dimension = math.min(width, height)
 
     local box_border = min_dimension * BOX_BORDER
@@ -300,7 +300,7 @@ function _find_largest_font_size(width, height, text, min_font_size, font_search
     return prev_font_size
 end
 
-function _find_largest_font_size_ex(width, height, text)
+local function _find_largest_font_size_ex(width, height, text)
     local font_size, err = _find_largest_font_size(width, height, text, MIN_FONT_SIZE, FONT_SEARCH_STEP)
     if err ~= nil then
         return nil, "unable to find the largest font size: " .. err
@@ -314,7 +314,7 @@ function _find_largest_font_size_ex(width, height, text)
     return font_size
 end
 
-function _initialize_box(width, height, text, font, kind, box_y, moving_delay)
+local function _initialize_box(width, height, text, font, kind, box_y, moving_delay)
     local min_dimension = math.min(width, height)
 
     local box_width = width * BOX_WIDTH
@@ -381,7 +381,7 @@ function _initialize_box(width, height, text, font, kind, box_y, moving_delay)
     return box
 end
 
-function _initialize_boxes(width, height, text, prev_boxes)
+local function _initialize_boxes(width, height, text, prev_boxes)
     if prev_boxes then
         for _, prev_box in ipairs(prev_boxes) do
             if prev_box.moving then
@@ -472,7 +472,36 @@ function _initialize_boxes(width, height, text, prev_boxes)
     return boxes
 end
 
-function _initialize_ui(width, height, prev_ui_root_components)
+local function _initialize_scene()
+    width = love.graphics.getWidth()
+    height = love.graphics.getHeight()
+
+    field = _initialize_field(width, height, field)
+
+    if show_logo then
+        field.finish_ticker:stop()
+
+        logo = _initialize_logo(width, height, logo)
+    end
+
+    if show_boxes then
+        field.finish_ticker:stop()
+
+        local local_boxes, err = _initialize_boxes(width, height, text_for_boxes, boxes)
+        if err ~= nil then
+            error("unable to initialize the boxes: " .. err)
+        end
+
+        boxes = local_boxes
+    end
+
+    total_dt = 0
+
+    love.mouse.setVisible(false)
+    love.graphics.setBackgroundColor({0.3, 0.3, 1})
+end
+
+local function _initialize_ui(width, height, prev_ui_root_components)
     if prev_ui_root_components then
         for _, ui_root_component in ipairs(prev_ui_root_components) do
             gooi.removeComponent(ui_root_component)
@@ -659,35 +688,6 @@ function _initialize_ui(width, height, prev_ui_root_components)
     love.graphics.setBackgroundColor({0.1, 0.1, 0.1})
 
     return ui_root_components
-end
-
-function _initialize_scene()
-    width = love.graphics.getWidth()
-    height = love.graphics.getHeight()
-
-    field = _initialize_field(width, height, field)
-
-    if show_logo then
-        field.finish_ticker:stop()
-
-        logo = _initialize_logo(width, height, logo)
-    end
-
-    if show_boxes then
-        field.finish_ticker:stop()
-
-        local local_boxes, err = _initialize_boxes(width, height, text_for_boxes, boxes)
-        if err ~= nil then
-            error("unable to initialize the boxes: " .. err)
-        end
-
-        boxes = local_boxes
-    end
-
-    total_dt = 0
-
-    love.mouse.setVisible(false)
-    love.graphics.setBackgroundColor({0.3, 0.3, 1})
 end
 
 function love.load()
