@@ -655,9 +655,8 @@ local function _initialize_ui(width, height, prev_ui_root_components)
     local menu_height = height * MENU_HEIGHT
     local ui_font_size = min_dimension * UI_FONT_SIZE
 
-    if love.system.getOS() ~= "Android" then
-        gooi.desktopMode()
-    end
+    -- Backspace doesn't work on Android without it
+    gooi.desktopMode()
 
     local ui_font = love.graphics.newFont(
         "resources/Roboto/Roboto-Regular.ttf",
