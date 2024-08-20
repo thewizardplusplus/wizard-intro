@@ -57,8 +57,6 @@ local show_logo = false
 local show_boxes = false
 local text_for_boxes = ""
 
-local width
-local height
 local field
 local logo
 local boxes
@@ -72,7 +70,9 @@ local ui_selected_app_mode
 local function _is_instance_from_love_2d(value, type_name)
     assertions.is_string(type_name)
 
-    return value ~= nil and checks.is_callable(value.typeOf) and value:typeOf(type_name)
+    return value ~= nil
+        and checks.is_callable(value.typeOf)
+        and value:typeOf(type_name)
 end
 
 local function _initialize_field(width, height, prev_field)
@@ -92,12 +92,16 @@ local function _initialize_field(width, height, prev_field)
     local cell_size = math.floor(min_dimension / MIN_SIDE_CELL_COUNT)
     local max_side_cell_count = math.floor(max_dimension / cell_size)
 
-    local min_side_offset = math.floor((min_dimension - MIN_SIDE_CELL_COUNT * cell_size) / 2)
-    local max_side_offset = math.floor((max_dimension - max_side_cell_count * cell_size) / 2)
+    local min_side_offset = math.floor(
+        (min_dimension - MIN_SIDE_CELL_COUNT * cell_size) / 2
+    )
+    local max_side_offset = math.floor(
+        (max_dimension - max_side_cell_count * cell_size) / 2
+    )
 
     local field_size
-    local x_offset = 0
-    local y_offset = 0
+    local x_offset
+    local y_offset
     if is_album_orientation then
         field_size = Size:new(max_side_cell_count, MIN_SIDE_CELL_COUNT)
         x_offset = max_side_offset
@@ -108,13 +112,22 @@ local function _initialize_field(width, height, prev_field)
         y_offset = max_side_offset
     end
 
-    local blur_effect = moonshine.chain(width, height, moonshine.effects[field_blur_effect])
+    local blur_effect = moonshine.chain(
+        width,
+        height,
+        moonshine.effects[field_blur_effect]
+    )
     if not use_blur_field_mode then
-        blur_effect.disable("boxblur", "fastgaussianblur", "gaussianblur", "glow")
+        blur_effect.disable(
+            "boxblur",
+            "fastgaussianblur",
+            "gaussianblur",
+            "glow"
+        )
     end
 
     local inner_field = random.generate(Field:new(field_size), FIELD_FILLING)
-    local field = {
+    local field = { -- luacheck: no redefined
         inner_field = inner_field,
         cell_size = cell_size,
         x_offset = x_offset,
@@ -143,17 +156,26 @@ local function _initialize_logo(width, height, prev_logo)
     assertions.is_integer(height)
     assertions.is_table_or_nil(prev_logo)
 
-    local logo = prev_logo
+    local logo = prev_logo -- luacheck: no redefined
     if not logo then
         logo = { opacity = 0 }
 
         logo.image = love.graphics.newImage("resources/logo.png")
-        center:setupScreen(logo.image:getPixelWidth(), logo.image:getPixelHeight())
+        center:setupScreen(
+            logo.image:getPixelWidth(),
+            logo.image:getPixelHeight()
+        )
 
-        logo.foreground_audio = love.audio.newSource("resources/BRAAAM/BRAAAM.wav", "static")
+        logo.foreground_audio = love.audio.newSource(
+            "resources/BRAAAM/BRAAAM.wav",
+            "static"
+        )
         logo.foreground_audio:setVolume(LOGO_FOREGROUND_AUDIO_VOLUME)
 
-        logo.background_audio = love.audio.newSource("resources/4BarLoop/4BarLoop.wav", "static")
+        logo.background_audio = love.audio.newSource(
+            "resources/4BarLoop/4BarLoop.wav",
+            "static"
+        )
         logo.background_audio:setLooping(true)
 
         logo.audios = {logo.foreground_audio, logo.background_audio}
@@ -190,7 +212,10 @@ local function _initialize_logo(width, height, prev_logo)
         :after(logo, LOGO_FADDING_DURATION_OFF, { opacity = 0 })
         :ease("quadin")
         :onupdate(function()
-            local background_audio_volume = math.min(logo.opacity * LOGO_BACKGROUND_AUDIO_FADDING, 1)
+            local background_audio_volume = math.min(
+                logo.opacity * LOGO_BACKGROUND_AUDIO_FADDING,
+                1
+            )
             logo.background_audio:setVolume(background_audio_volume)
         end)
         :oncomplete(function()
@@ -231,7 +256,10 @@ local function _split_text_to_lines(width, height, text, font)
     local box_border = min_dimension * BOX_BORDER
     local box_padding = min_dimension * BOX_PADDING
 
-    local max_text_width = width - 2 * width * (1 - BOX_TARGET_X) - 2 * box_border - 2 * box_padding
+    local max_text_width = width
+        - 2 * width * (1 - BOX_TARGET_X)
+        - 2 * box_border
+        - 2 * box_padding
 
     local words = {}
     for word in string.gmatch(text, "[^%s]+") do
@@ -243,7 +271,9 @@ local function _split_text_to_lines(width, height, text, font)
     local word_index = 1
     while word_index <= #words do
         local word = words[word_index]
-        local extended_text = current_text .. (current_text ~= "" and " " or "") .. word
+        local extended_text = current_text
+            .. (current_text ~= "" and " " or "")
+            .. word
 
         local text_size = _get_text_size(extended_text, font)
         if text_size.width <= max_text_width then
@@ -263,7 +293,13 @@ local function _split_text_to_lines(width, height, text, font)
     return lines
 end
 
-local function _find_largest_font_size(width, height, text, min_font_size, font_search_step)
+local function _find_largest_font_size(
+    width,
+    height,
+    text,
+    min_font_size,
+    font_search_step
+)
     assertions.is_integer(width)
     assertions.is_integer(height)
     assertions.is_string(text)
@@ -284,11 +320,17 @@ local function _find_largest_font_size(width, height, text, min_font_size, font_
     local prev_font_size
     local font_size = min_font_size
     while font_size <= max_font_size do
-        local font = love.graphics.newFont("resources/Roboto/Roboto-Bold.ttf", font_size)
+        local font = love.graphics.newFont(
+            "resources/Roboto/Roboto-Bold.ttf",
+            font_size
+        )
         local lines, err = _split_text_to_lines(width, height, text, font)
         if err ~= nil then
             if not prev_font_size then
-                return nil, "text is too large: unable to split the text to lines: " .. err
+                return nil,
+                    "text is too large: "
+                    .. "unable to split the text to lines: "
+                    .. err
             end
 
             return prev_font_size
@@ -297,23 +339,29 @@ local function _find_largest_font_size(width, height, text, min_font_size, font_
         local total_box_height = 0
         for _, line in ipairs(lines) do
             local text_size = _get_text_size(line, font)
-            local box_height = text_size.height + 2 * box_border + 2 * box_padding
+            local box_height = text_size.height
+                + 2 * box_border
+                + 2 * box_padding
             total_box_height = total_box_height + box_height + box_shadow
         end
         if total_box_height > max_total_box_height then
             if not prev_font_size then
-                return nil, "text is too large: the total text height is greater than its maximum"
+                return nil,
+                    "text is too large: "
+                    .. "the total text height is greater than its maximum"
             end
 
             return prev_font_size
         end
 
-        local box_margin = 0
         if #lines > 1 then
-            box_margin = (max_total_box_height - total_box_height) / (#lines - 1)
+            local box_margin = (max_total_box_height - total_box_height)
+                / (#lines - 1)
             if box_margin < box_min_margin then
                 if not prev_font_size then
-                    return nil, "text is too large: the box margin is less than its minimum"
+                    return nil,
+                        "text is too large: "
+                        .. "the box margin is less than its minimum"
                 end
 
                 return prev_font_size
@@ -324,7 +372,9 @@ local function _find_largest_font_size(width, height, text, min_font_size, font_
         font_size = font_size + font_search_step
     end
     if not prev_font_size then
-        return nil, "text is too large: the result font size is greater than its maximum"
+        return nil,
+            "text is too large: "
+            .. "the result font size is greater than its maximum"
     end
 
     return prev_font_size
@@ -335,20 +385,36 @@ local function _find_largest_font_size_ex(width, height, text)
     assertions.is_integer(height)
     assertions.is_string(text)
 
-    local font_size, err = _find_largest_font_size(width, height, text, MIN_FONT_SIZE, FONT_SEARCH_STEP)
+    local font_size, err = _find_largest_font_size(
+        width,
+        height,
+        text,
+        MIN_FONT_SIZE,
+        FONT_SEARCH_STEP
+    )
     if err ~= nil then
         return nil, "unable to find the largest font size: " .. err
     end
 
     font_size, err = _find_largest_font_size(width, height, text, font_size, 1)
     if err ~= nil then
-        return nil, "unable to find the largest font size (for the second time): " .. err
+        return nil,
+            "unable to find the largest font size (for the second time): "
+            .. err
     end
 
     return font_size
 end
 
-local function _initialize_box(width, height, text, font, kind, box_y, moving_delay)
+local function _initialize_box(
+    width,
+    height,
+    text,
+    font,
+    kind,
+    box_y,
+    moving_delay
+)
     assertions.is_integer(width)
     assertions.is_integer(height)
     assertions.is_string(text)
@@ -365,7 +431,10 @@ local function _initialize_box(width, height, text, font, kind, box_y, moving_de
     local box_shadow = min_dimension * BOX_SHADOW
 
     local min_text_x = width * (1 - BOX_TARGET_X) + box_border + box_padding
-    local max_text_width = width - 2 * width * (1 - BOX_TARGET_X) - 2 * box_border - 2 * box_padding
+    local max_text_width = width
+        - 2 * width * (1 - BOX_TARGET_X)
+        - 2 * box_border
+        - 2 * box_padding
 
     local box_x
     local box_target_x
@@ -445,7 +514,6 @@ local function _initialize_boxes(width, height, text, prev_boxes)
 
     local box_border = min_dimension * BOX_BORDER
     local box_padding = min_dimension * BOX_PADDING
-    local box_min_margin = min_dimension * BOX_MIN_MARGIN
     local box_max_margin = min_dimension * BOX_MAX_MARGIN
     local box_shadow = min_dimension * BOX_SHADOW
 
@@ -457,8 +525,16 @@ local function _initialize_boxes(width, height, text, prev_boxes)
         return nil, "unable to find the largest font size: " .. err
     end
 
-    local font = love.graphics.newFont("resources/Roboto/Roboto-Bold.ttf", font_size)
-    local lines, err = _split_text_to_lines(width, height, text, font)
+    local font = love.graphics.newFont(
+        "resources/Roboto/Roboto-Bold.ttf",
+        font_size
+    )
+    local lines, err = _split_text_to_lines( -- luacheck: no redefined
+        width,
+        height,
+        text,
+        font
+    )
     if err ~= nil then
         return nil, "unable to split the text to lines: " .. err
     end
@@ -479,15 +555,26 @@ local function _initialize_boxes(width, height, text, prev_boxes)
     end
 
     local final_total_box_height = total_box_height + box_margin * (#lines - 1)
-    local min_box_y = total_text_vertical_margin + (max_total_box_height - final_total_box_height) / 2
+    local min_box_y = total_text_vertical_margin
+        + (max_total_box_height - final_total_box_height) / 2
 
-    local boxes = {}
+    local boxes = {} -- luacheck: no redefined
     local box_kind = "left"
     local box_y = min_box_y
     local box_above
     for index, line in ipairs(lines) do
-        local moving_delay = index == 1 and START_DELAY + BOX_MOVING_START_DELAY or 0
-        local box = _initialize_box(width, height, line, font, box_kind, box_y, moving_delay)
+        local moving_delay = index == 1
+            and START_DELAY + BOX_MOVING_START_DELAY
+            or 0
+        local box = _initialize_box(
+            width,
+            height,
+            line,
+            font,
+            box_kind,
+            box_y,
+            moving_delay
+        )
         if index == 1 then
             box.start_moving()
         else
@@ -518,8 +605,8 @@ local function _initialize_boxes(width, height, text, prev_boxes)
 end
 
 local function _initialize_scene()
-    width = love.graphics.getWidth()
-    height = love.graphics.getHeight()
+    local width = love.graphics.getWidth()
+    local height = love.graphics.getHeight()
 
     field = _initialize_field(width, height, field)
 
@@ -532,7 +619,12 @@ local function _initialize_scene()
     if show_boxes then
         field.finish_ticker:stop()
 
-        local local_boxes, err = _initialize_boxes(width, height, text_for_boxes, boxes)
+        local local_boxes, err = _initialize_boxes(
+            width,
+            height,
+            text_for_boxes,
+            boxes
+        )
         if err ~= nil then
             error("unable to initialize the boxes: " .. err)
         end
@@ -567,12 +659,15 @@ local function _initialize_ui(width, height, prev_ui_root_components)
         gooi.desktopMode()
     end
 
-    local ui_font = love.graphics.newFont("resources/Roboto/Roboto-Regular.ttf", ui_font_size)
+    local ui_font = love.graphics.newFont(
+        "resources/Roboto/Roboto-Regular.ttf",
+        ui_font_size
+    )
     gooi.setStyle({
         font = ui_font,
     })
 
-    local ui_root_components = {}
+    local ui_root_components = {} -- luacheck: no redefined
 
     local main_menu_grid = gooi.newPanel({
         x = (width - menu_width) / 2,
@@ -610,16 +705,28 @@ local function _initialize_ui(width, height, prev_ui_root_components)
     )
     table.insert(ui_root_components, main_menu_grid)
 
-    local boxblur_effect_check = gooi.newRadio({ text = "> Box", radioGroup = "field-effect" })
+    local boxblur_effect_check = gooi.newRadio({
+        text = "> Box",
+        radioGroup = "field-effect",
+    })
     boxblur_effect_check:setEnabled(false)
 
-    local fastgaussianblur_effect_check = gooi.newRadio({ text = "> Fast Gaussian", radioGroup = "field-effect" })
+    local fastgaussianblur_effect_check = gooi.newRadio({
+        text = "> Fast Gaussian",
+        radioGroup = "field-effect",
+    })
     fastgaussianblur_effect_check:setEnabled(false)
 
-    local gaussianblur_effect_check = gooi.newRadio({ text = "> Gaussian", radioGroup = "field-effect" })
+    local gaussianblur_effect_check = gooi.newRadio({
+        text = "> Gaussian",
+        radioGroup = "field-effect",
+    })
     gaussianblur_effect_check:setEnabled(false)
 
-    local glow_effect_check = gooi.newRadio({ text = "> Glow", radioGroup = "field-effect" })
+    local glow_effect_check = gooi.newRadio({
+        text = "> Glow",
+        radioGroup = "field-effect",
+    })
     glow_effect_check:setEnabled(false)
 
     if field_blur_effect == "boxblur" then
@@ -695,7 +802,9 @@ local function _initialize_ui(width, height, prev_ui_root_components)
 
     local text_for_boxes_inputs = {}
     for index = 1, TEXT_INPUT_COUNT do
-        local text_for_boxes_input = gooi.newText({ text = index == 1 and "Hello, World!" or "" })
+        local text_for_boxes_input = gooi.newText({
+            text = index == 1 and "Hello, World!" or "",
+        })
         table.insert(text_for_boxes_inputs, text_for_boxes_input)
     end
 
@@ -721,7 +830,9 @@ local function _initialize_ui(width, height, prev_ui_root_components)
                 for _, text_for_boxes_input in ipairs(text_for_boxes_inputs) do
                     local text_part = text_for_boxes_input:getText()
                     if text_part ~= "" then
-                        text_for_boxes = text_for_boxes .. (text_for_boxes ~= "" and " " or "") .. text_part
+                        text_for_boxes = text_for_boxes
+                            .. (text_for_boxes ~= "" and " " or "")
+                            .. text_part
                     end
                 end
 
@@ -745,9 +856,10 @@ function love.load()
     box_audio = love.audio.newSource("resources/SlideOut.mp3", "static")
     text_audio = love.audio.newSource("resources/Typing.mp3", "static")
 
-    width = love.graphics.getWidth()
-    height = love.graphics.getHeight()
-    ui_root_components = _initialize_ui(width, height)
+    ui_root_components = _initialize_ui(
+        love.graphics.getWidth(),
+        love.graphics.getHeight()
+    )
     is_menu = true
 end
 
@@ -760,7 +872,8 @@ function love.update(dt)
     end
 
     total_dt = total_dt + dt
-    -- cannot use the `tick.recur()` function for this due to a slowdown on Android
+    -- cannot use the `tick.recur()` function for this
+    -- due to a slowdown on Android
     if total_dt > UPDATE_PERIOD then
         if field.can_be_updated then
             field.inner_field = life.populate(field.inner_field)
@@ -772,7 +885,9 @@ function love.update(dt)
     if show_boxes then
         for _, box in ipairs(boxes) do
             box.text_box:update(dt)
-            if box.is_text_sent and box.text_box:is_finished() and box.on_text_end then
+            if box.is_text_sent
+                and box.text_box:is_finished()
+                and box.on_text_end then
                 text_audio:stop()
 
                 box.on_text_end()
@@ -791,7 +906,9 @@ function love.draw()
         return
     end
 
-    -- reset the foreground color for the blur effect; it's relevant for the following effects: boxblur, fastgaussianblur, and gaussianblur
+    -- reset the foreground color for the blur effect;
+    -- it's relevant for the following effects:
+    -- boxblur, fastgaussianblur, and gaussianblur
     love.graphics.setColor({1, 1, 1})
     field.blur_effect.draw(function()
         field.inner_field:map(function(point, contains)
@@ -802,21 +919,37 @@ function love.draw()
                 return
             end
 
-            local x = point.x * field.cell_size + field.cell_size / 2 + field.x_offset
-            local y = point.y * field.cell_size + field.cell_size / 2 + field.y_offset
-            local radius = (field.cell_size - field.cell_size * CELL_PADDING) / 2
+            local x = point.x * field.cell_size
+                + field.cell_size / 2
+                + field.x_offset
+            local y = point.y * field.cell_size
+                + field.cell_size / 2
+                + field.y_offset
+            local radius = (field.cell_size - field.cell_size * CELL_PADDING)
+                / 2
             local opacity = use_transparent_field_mode and 0.5 or 1
 
             love.graphics.setColor({0.85, 0.85, 0.85, opacity})
             love.graphics.circle("fill", x, y, radius)
 
             love.graphics.setColor({1, 1, 1, opacity})
-            love.graphics.circle("fill", x, y, radius - field.cell_size * CELL_BORDER)
+            love.graphics.circle(
+                "fill",
+                x,
+                y,
+                radius - field.cell_size * CELL_BORDER
+            )
         end)
     end)
     if use_pale_field_mode then
         love.graphics.setColor({1, 1, 1, 0.5})
-        love.graphics.rectangle("fill", 0, 0, width, height)
+        love.graphics.rectangle(
+            "fill",
+            0,
+            0,
+            love.graphics.getWidth(),
+            love.graphics.getHeight()
+        )
     end
 
     if show_logo then
@@ -829,23 +962,33 @@ function love.draw()
     if show_boxes then
         for _, box in ipairs(boxes) do
             love.graphics.setColor({0.2, 0.2, 0.2})
-            love.graphics.rectangle("fill", box.x - box.shadow, box.y + box.shadow, box.width, box.height)
+            love.graphics.rectangle(
+                "fill",
+                box.x - box.shadow,
+                box.y + box.shadow,
+                box.width,
+                box.height
+            )
             love.graphics.setColor({0.2, 0.83, 0.2})
             love.graphics.rectangle("fill", box.x, box.y, box.width, box.height)
             love.graphics.setColor({0.3, 1, 0.3})
-            love.graphics.rectangle("fill", box.x + box.border, box.y + box.border, box.width - 2 * box.border, box.height - 2 * box.border)
+            love.graphics.rectangle(
+                "fill",
+                box.x + box.border,
+                box.y + box.border,
+                box.width - 2 * box.border,
+                box.height - 2 * box.border
+            )
 
             box.text_box:draw(box.text_x, box.y + box.border + box.padding)
         end
     end
 end
 
-function love.resize(new_width, new_height)
-    assertions.is_integer(new_width)
-    assertions.is_integer(new_height)
+function love.resize(width, height)
+    assertions.is_integer(width)
+    assertions.is_integer(height)
 
-    width = new_width
-    height = new_height
     ui_root_components = _initialize_ui(width, height, ui_root_components)
     is_menu = true
 end
