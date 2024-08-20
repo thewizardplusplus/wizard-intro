@@ -44,9 +44,9 @@ local MAX_FONT_SIZE = 0.075
 local FONT_SEARCH_STEP = 10
 local TOTAL_TEXT_VERTICAL_MARGIN = 0.1
 local MENU_WIDTH = 0.75
-local MENU_HEIGHT = 0.5
+local MENU_HEIGHT = 0.75
 local UI_FONT_SIZE = 0.05
-local TEXT_INPUT_COUNT = 5
+local TEXT_INPUT_COUNT = 7
 
 local use_pale_field_mode = false
 local use_transparent_field_mode = false
@@ -755,9 +755,10 @@ local function _initialize_ui(width, height, prev_ui_root_components)
         y = (height - menu_height) / 2,
         w = menu_width,
         h = menu_height,
-        layout = "grid 8x1",
+        layout = "grid 9x1",
         group = "field-settings",
     })
+    field_settings_grid:setRowspan(8, 1, 2)
     field_settings_grid:add(
         pale_mode_check,
         transparent_mode_check,
@@ -813,9 +814,10 @@ local function _initialize_ui(width, height, prev_ui_root_components)
         y = (height - menu_height) / 2,
         w = menu_width,
         h = menu_height,
-        layout = string.format("grid %dx1", TEXT_INPUT_COUNT + 1),
+        layout = string.format("grid %dx1", TEXT_INPUT_COUNT + 2),
         group = "boxes-settings",
     })
+    boxes_settings_grid:setRowspan(TEXT_INPUT_COUNT + 1, 1, 2)
     for _, text_for_boxes_input in ipairs(text_for_boxes_inputs) do
         boxes_settings_grid:add(text_for_boxes_input)
     end
