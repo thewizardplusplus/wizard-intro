@@ -2,6 +2,8 @@ local require_paths =
   {"?.lua", "?/init.lua", "vendor/?.lua", "vendor/?/init.lua"}
 love.filesystem.setRequirePath(table.concat(require_paths, ";"))
 
+local assertions = require("luatypechecks.assertions")
+local checks = require("luatypechecks.checks")
 local Size = require("lualife.models.size")
 local Point = require("lualife.models.point")
 local Field = require("lualife.models.field")
@@ -67,7 +69,17 @@ local is_menu
 local ui_root_components
 local ui_selected_app_mode
 
+local function _is_instance_from_love_2d(value, type_name)
+    assertions.is_string(type_name)
+
+    return value ~= nil and checks.is_callable(value.typeOf) and value:typeOf(type_name)
+end
+
 local function _initialize_field(width, height, prev_field)
+    assertions.is_integer(width)
+    assertions.is_integer(height)
+    assertions.is_table_or_nil(prev_field)
+
     if prev_field then
         prev_field.ticker:stop()
         prev_field.finish_ticker:stop()
@@ -127,6 +139,10 @@ local function _initialize_field(width, height, prev_field)
 end
 
 local function _initialize_logo(width, height, prev_logo)
+    assertions.is_integer(width)
+    assertions.is_integer(height)
+    assertions.is_table_or_nil(prev_logo)
+
     local logo = prev_logo
     if not logo then
         logo = { opacity = 0 }
@@ -192,6 +208,9 @@ local function _initialize_logo(width, height, prev_logo)
 end
 
 local function _get_text_size(text, font)
+    assertions.is_string(text)
+    assertions.is_true(_is_instance_from_love_2d(font, "Font"))
+
     local text_box = SYSLText.new("left", { font = font })
     text_box:send(text)
 
@@ -202,6 +221,11 @@ local function _get_text_size(text, font)
 end
 
 local function _split_text_to_lines(width, height, text, font)
+    assertions.is_integer(width)
+    assertions.is_integer(height)
+    assertions.is_string(text)
+    assertions.is_true(_is_instance_from_love_2d(font, "Font"))
+
     local min_dimension = math.min(width, height)
 
     local box_border = min_dimension * BOX_BORDER
@@ -240,6 +264,12 @@ local function _split_text_to_lines(width, height, text, font)
 end
 
 local function _find_largest_font_size(width, height, text, min_font_size, font_search_step)
+    assertions.is_integer(width)
+    assertions.is_integer(height)
+    assertions.is_string(text)
+    assertions.is_integer(min_font_size)
+    assertions.is_integer(font_search_step)
+
     local min_dimension = math.min(width, height)
 
     local box_border = min_dimension * BOX_BORDER
@@ -301,6 +331,10 @@ local function _find_largest_font_size(width, height, text, min_font_size, font_
 end
 
 local function _find_largest_font_size_ex(width, height, text)
+    assertions.is_integer(width)
+    assertions.is_integer(height)
+    assertions.is_string(text)
+
     local font_size, err = _find_largest_font_size(width, height, text, MIN_FONT_SIZE, FONT_SEARCH_STEP)
     if err ~= nil then
         return nil, "unable to find the largest font size: " .. err
@@ -315,6 +349,14 @@ local function _find_largest_font_size_ex(width, height, text)
 end
 
 local function _initialize_box(width, height, text, font, kind, box_y, moving_delay)
+    assertions.is_integer(width)
+    assertions.is_integer(height)
+    assertions.is_string(text)
+    assertions.is_true(_is_instance_from_love_2d(font, "Font"))
+    assertions.is_enumeration(kind, {"left", "right"})
+    assertions.is_number(box_y)
+    assertions.is_number(moving_delay)
+
     local min_dimension = math.min(width, height)
 
     local box_width = width * BOX_WIDTH
@@ -330,11 +372,9 @@ local function _initialize_box(width, height, text, font, kind, box_y, moving_de
     if kind == "left" then
         box_x = -box_width
         box_target_x = box_x + width * BOX_TARGET_X
-    elseif kind == "right" then
+    else
         box_x = width + box_shadow
         box_target_x = box_x - width * BOX_TARGET_X - box_shadow
-    else
-        error("unknown kind of the box: " .. kind)
     end
 
     local text_size = _get_text_size(text, font)
@@ -382,6 +422,11 @@ local function _initialize_box(width, height, text, font, kind, box_y, moving_de
 end
 
 local function _initialize_boxes(width, height, text, prev_boxes)
+    assertions.is_integer(width)
+    assertions.is_integer(height)
+    assertions.is_string(text)
+    assertions.is_sequence_or_nil(prev_boxes, checks.is_table)
+
     if prev_boxes then
         for _, prev_box in ipairs(prev_boxes) do
             if prev_box.moving then
@@ -502,6 +547,10 @@ local function _initialize_scene()
 end
 
 local function _initialize_ui(width, height, prev_ui_root_components)
+    assertions.is_integer(width)
+    assertions.is_integer(height)
+    assertions.is_sequence_or_nil(prev_ui_root_components, checks.is_table)
+
     if prev_ui_root_components then
         for _, ui_root_component in ipairs(prev_ui_root_components) do
             gooi.removeComponent(ui_root_component)
@@ -703,6 +752,8 @@ function love.load()
 end
 
 function love.update(dt)
+    assertions.is_number(dt)
+
     if is_menu then
         gooi.update(dt)
         return
@@ -744,6 +795,9 @@ function love.draw()
     love.graphics.setColor({1, 1, 1})
     field.blur_effect.draw(function()
         field.inner_field:map(function(point, contains)
+            assertions.is_instance(point, Point)
+            assertions.is_boolean(contains)
+
             if not contains then
                 return
             end
@@ -787,6 +841,9 @@ function love.draw()
 end
 
 function love.resize(new_width, new_height)
+    assertions.is_integer(new_width)
+    assertions.is_integer(new_height)
+
     width = new_width
     height = new_height
     ui_root_components = _initialize_ui(width, height, ui_root_components)
@@ -794,6 +851,9 @@ function love.resize(new_width, new_height)
 end
 
 function love.keypressed(key, scancode)
+    assertions.is_string(key)
+    assertions.is_string(scancode)
+
     if key == "escape" then
         love.event.quit()
     end
@@ -802,10 +862,15 @@ function love.keypressed(key, scancode)
 end
 
 function love.keyreleased(key, scancode)
+    assertions.is_string(key)
+    assertions.is_string(scancode)
+
     gooi.keyreleased(key, scancode)
 end
 
 function love.textinput(text)
+    assertions.is_string(text)
+
     gooi.textinput(text)
 end
 
