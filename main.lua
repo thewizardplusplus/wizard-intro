@@ -638,6 +638,13 @@ local function _initialize_scene()
     love.graphics.setBackgroundColor({0.3, 0.3, 1})
 end
 
+local function _press_gooi_component(component)
+    local x = component.x + component.w / 2
+    local y = component.y + component.h / 2
+    gooi.pressed(component.id, x, y)
+    gooi.released(component.id, x, y)
+end
+
 local function _initialize_ui(width, height, prev_ui_root_components)
     assertions.is_integer(width)
     assertions.is_integer(height)
@@ -749,6 +756,14 @@ local function _initialize_ui(width, height, prev_ui_root_components)
         glow_effect_check:setEnabled(is_checked)
     end)
 
+    local text_for_boxes_inputs = {}
+    for index = 1, TEXT_INPUT_COUNT do
+        local text_for_boxes_input = gooi.newText({
+            text = index == 1 and "Hello, World!" or "",
+        })
+        table.insert(text_for_boxes_inputs, text_for_boxes_input)
+    end
+
     local field_settings_grid = gooi.newPanel({
         x = (width - menu_width) / 2,
         y = (height - menu_height) / 2,
@@ -787,6 +802,8 @@ local function _initialize_ui(width, height, prev_ui_root_components)
                     gooi.setGroupVisible("field-settings", false)
                     gooi.setGroupVisible("boxes-settings", true)
 
+                    _press_gooi_component(text_for_boxes_inputs[1])
+
                     return
                 end
 
@@ -799,14 +816,6 @@ local function _initialize_ui(width, height, prev_ui_root_components)
     )
     gooi.setGroupVisible("field-settings", false)
     table.insert(ui_root_components, field_settings_grid)
-
-    local text_for_boxes_inputs = {}
-    for index = 1, TEXT_INPUT_COUNT do
-        local text_for_boxes_input = gooi.newText({
-            text = index == 1 and "Hello, World!" or "",
-        })
-        table.insert(text_for_boxes_inputs, text_for_boxes_input)
-    end
 
     local boxes_settings_grid = gooi.newPanel({
         x = (width - menu_width) / 2,
@@ -1010,10 +1019,7 @@ function love.keypressed(key, scancode)
 
         if #visible_buttons == 1 then
             local start_button = visible_buttons[1]
-            local x = start_button.x + start_button.w / 2
-            local y = start_button.y + start_button.h / 2
-            gooi.pressed(start_button.id, x, y)
-            gooi.released(start_button.id, x, y)
+            _press_gooi_component(start_button)
         end
     end
 
