@@ -1000,6 +1000,21 @@ function love.keypressed(key, scancode)
 
     if key == "escape" then
         love.event.quit()
+    elseif key == "return" then
+        local visible_buttons = {}
+        for _ , button in ipairs(gooi.getByType("button")) do
+            if button.visible then
+                table.insert(visible_buttons, button)
+            end
+        end
+
+        if #visible_buttons == 1 then
+            local start_button = visible_buttons[1]
+            local x = start_button.x + start_button.w / 2
+            local y = start_button.y + start_button.h / 2
+            gooi.pressed(start_button.id, x, y)
+            gooi.released(start_button.id, x, y)
+        end
     end
 
     gooi.keypressed(key, scancode)
