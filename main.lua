@@ -798,17 +798,15 @@ local function _initialize_ui(width, height, prev_ui_root_components)
                     field_blur_effect = "glow"
                 end
 
+                gooi.setGroupVisible("field-settings", false)
+
                 if ui_selected_app_mode == "text-rectangles" then
-                    gooi.setGroupVisible("field-settings", false)
                     gooi.setGroupVisible("boxes-settings", true)
-
                     _press_gooi_component(text_for_boxes_inputs[1])
-
                     return
                 end
 
                 show_logo = ui_selected_app_mode == "logo"
-                show_boxes = ui_selected_app_mode == "text-rectangles"
                 is_menu = false
 
                 _initialize_scene()
@@ -833,8 +831,7 @@ local function _initialize_ui(width, height, prev_ui_root_components)
         gooi
             .newButton({ text = "Start" })
             :onRelease(function()
-                show_logo = ui_selected_app_mode == "logo"
-                show_boxes = ui_selected_app_mode == "text-rectangles"
+                show_boxes = true
 
                 text_for_boxes = ""
                 for _, text_for_boxes_input in ipairs(text_for_boxes_inputs) do
@@ -848,6 +845,7 @@ local function _initialize_ui(width, height, prev_ui_root_components)
 
                 is_menu = false
 
+                gooi.setGroupVisible("boxes-settings", false)
                 _initialize_scene()
             end)
     )
