@@ -645,6 +645,17 @@ local function _press_gooi_component(component)
     gooi.released(component.id, x, y)
 end
 
+local function _get_visible_gooi_components_by_type(component_type)
+    local visible_components = {}
+    for _ , component in ipairs(gooi.getByType(component_type)) do
+        if component.visible then
+            table.insert(visible_components, component)
+        end
+    end
+
+    return visible_components
+end
+
 local function _initialize_ui(width, height, prev_ui_root_components)
     assertions.is_integer(width)
     assertions.is_integer(height)
@@ -1008,16 +1019,35 @@ function love.keypressed(key, scancode)
     if key == "escape" then
         love.event.quit()
     elseif key == "return" then
-        local visible_buttons = {}
-        for _ , button in ipairs(gooi.getByType("button")) do
-            if button.visible then
-                table.insert(visible_buttons, button)
-            end
-        end
-
+        local visible_buttons = _get_visible_gooi_components_by_type("button")
         if #visible_buttons == 1 then
             local start_button = visible_buttons[1]
             _press_gooi_component(start_button)
+        end
+    elseif key == "tab" then
+        local visible_text_inputs = _get_visible_gooi_components_by_type("text")
+        table.sort(visible_text_inputs, function(component_one, component_two)
+            return component_one.id < component_two.id
+        end)
+
+        local focused_index = -1
+        for index, text_input in ipairs(visible_text_inputs) do
+            if text_input.hasFocus then
+                focused_index = index
+                break
+            end
+        end
+
+        if focused_index ~= -1 then
+            local next_index = focused_index
+            if love.keyboard.isDown("lshift")
+                or love.keyboard.isDown("rshift") then
+                next_index = math.max(next_index - 1, 1)
+            else
+                next_index = math.min(next_index + 1, #visible_text_inputs)
+            end
+
+            _press_gooi_component(visible_text_inputs[next_index])
         end
     end
 
