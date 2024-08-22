@@ -75,15 +75,9 @@ local function _is_instance_from_love_2d(value, type_name)
         and value:typeOf(type_name)
 end
 
-local function _initialize_field(width, height, prev_field)
+local function _initialize_field(width, height)
     assertions.is_integer(width)
     assertions.is_integer(height)
-    assertions.is_table_or_nil(prev_field)
-
-    if prev_field then
-        prev_field.ticker:stop()
-        prev_field.finish_ticker:stop()
-    end
 
     local min_dimension = math.min(width, height)
     local max_dimension = math.max(width, height)
@@ -151,6 +145,17 @@ local function _initialize_field(width, height, prev_field)
     return field
 end
 
+local function _reset_field(field) -- luacheck: no redefined
+    assertions.is_table_or_nil(field)
+
+    if not field then
+        return
+    end
+
+    field.ticker:stop()
+    field.finish_ticker:stop()
+end
+
 local function _initialize_logo(width, height, prev_logo)
     assertions.is_integer(width)
     assertions.is_integer(height)
@@ -181,17 +186,6 @@ local function _initialize_logo(width, height, prev_logo)
         logo.audios = {logo.foreground_audio, logo.background_audio}
     else
         center:resize(width, height)
-
-        logo.opacity = 0
-        logo.fadding:stop()
-        if logo.ticker then
-            logo.ticker:stop()
-        end
-
-        for _, audio in ipairs(logo.audios) do
-            audio:stop()
-            audio:seek(0)
-        end
     end
 
     local min_dimension = math.min(width, height)
@@ -200,7 +194,7 @@ local function _initialize_logo(width, height, prev_logo)
     center:apply()
 
     local fadding_duration_on = logo.foreground_audio:getDuration()
-    logo.fadding = flux.to(logo, fadding_duration_on, { opacity = 1 })
+    logo.fadding_in = flux.to(logo, fadding_duration_on, { opacity = 1 })
         :ease("quadout")
         :delay(START_DELAY + LOGO_FADDING_START_DELAY)
         :onstart(function()
@@ -209,6 +203,8 @@ local function _initialize_logo(width, height, prev_logo)
         :oncomplete(function()
             logo.foreground_audio:stop()
         end)
+
+    logo.fadding_out = logo.fadding_in
         :after(logo, LOGO_FADDING_DURATION_OFF, { opacity = 0 })
         :ease("quadin")
         :onupdate(function()
@@ -230,6 +226,35 @@ local function _initialize_logo(width, height, prev_logo)
         end)
 
     return logo
+end
+
+local function _reset_audios(audios)
+    assertions.is_sequence_or_nil(audios, function(value)
+        return _is_instance_from_love_2d(value, "Source")
+    end)
+
+    for _, audio in ipairs(audios) do
+        audio:stop()
+        audio:seek(0)
+    end
+end
+
+local function _reset_logo(logo) -- luacheck: no redefined
+    assertions.is_table_or_nil(logo)
+
+    if not logo then
+        return
+    end
+
+    logo.opacity = 0
+
+    logo.fadding_in:stop()
+    logo.fadding_out:stop()
+    if logo.ticker then
+        logo.ticker:stop()
+    end
+
+    _reset_audios(logo.audios)
 end
 
 local function _get_text_size(text, font)
@@ -473,16 +498,14 @@ local function _initialize_box(
             :delay(moving_delay)
             :ease("cubicout")
             :onstart(function()
-                box_audio:seek(0)
                 box_audio:play()
             end)
             :oncomplete(function()
-                box_audio:stop()
+                _reset_audios({box_audio})
 
                 text_box:send(text)
                 box.is_text_sent = true
 
-                text_audio:seek(0)
                 text_audio:play()
             end)
     end
@@ -490,25 +513,10 @@ local function _initialize_box(
     return box
 end
 
-local function _initialize_boxes(width, height, text, prev_boxes)
+local function _initialize_boxes(width, height, text)
     assertions.is_integer(width)
     assertions.is_integer(height)
     assertions.is_string(text)
-    assertions.is_sequence_or_nil(prev_boxes, checks.is_table)
-
-    if prev_boxes then
-        for _, prev_box in ipairs(prev_boxes) do
-            if prev_box.moving then
-                prev_box.moving:stop()
-            end
-            if prev_box.ticker then
-                prev_box.ticker:stop()
-            end
-
-            box_audio:stop()
-            text_audio:stop()
-        end
-    end
 
     local min_dimension = math.min(width, height)
 
@@ -604,11 +612,30 @@ local function _initialize_boxes(width, height, text, prev_boxes)
     return boxes
 end
 
+local function _reset_boxes(boxes) -- luacheck: no redefined
+    assertions.is_sequence_or_nil(boxes, checks.is_table)
+
+    if not boxes then
+        return
+    end
+
+    _reset_audios({box_audio, text_audio})
+
+    for _, box in ipairs(boxes) do
+        if box.moving then
+            box.moving:stop()
+        end
+        if box.ticker then
+            box.ticker:stop()
+        end
+    end
+end
+
 local function _initialize_scene()
     local width = love.graphics.getWidth()
     local height = love.graphics.getHeight()
 
-    field = _initialize_field(width, height, field)
+    field = _initialize_field(width, height)
 
     if show_logo then
         field.finish_ticker:stop()
@@ -622,8 +649,7 @@ local function _initialize_scene()
         local local_boxes, err = _initialize_boxes(
             width,
             height,
-            text_for_boxes,
-            boxes
+            text_for_boxes
         )
         if err ~= nil then
             error("unable to initialize the boxes: " .. err)
@@ -636,6 +662,12 @@ local function _initialize_scene()
 
     love.mouse.setVisible(false)
     love.graphics.setBackgroundColor({0.3, 0.3, 1})
+end
+
+local function _reset_scene()
+    _reset_field(field)
+    _reset_logo(logo)
+    _reset_boxes(boxes)
 end
 
 local function _press_gooi_component(component)
@@ -902,10 +934,11 @@ function love.update(dt)
     if show_boxes then
         for _, box in ipairs(boxes) do
             box.text_box:update(dt)
+
             if box.is_text_sent
                 and box.text_box:is_finished()
                 and box.on_text_end then
-                text_audio:stop()
+                _reset_audios({text_audio})
 
                 box.on_text_end()
                 box.on_text_end = nil
@@ -1005,6 +1038,8 @@ end
 function love.resize(width, height)
     assertions.is_integer(width)
     assertions.is_integer(height)
+
+    _reset_scene()
 
     ui_root_components = _initialize_ui(width, height, ui_root_components)
     is_menu = true
