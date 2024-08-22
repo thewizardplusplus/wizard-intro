@@ -693,6 +693,23 @@ local function _get_start_button()
     return #visible_buttons == 1 and visible_buttons[1] or nil
 end
 
+local function _get_text_from_text_inputs()
+    local visible_text_inputs = _get_visible_gooi_components_by_type("text")
+    table.sort(visible_text_inputs, function(component_one, component_two)
+        return component_one.id < component_two.id
+    end)
+
+    local text = ""
+    for _, text_input in ipairs(visible_text_inputs) do
+        local text_part = text_input:getText()
+        if text_part ~= "" then
+            text = text .. (text ~= "" and " " or "") .. text_part
+        end
+    end
+
+    return text
+end
+
 local function _initialize_ui(width, height, prev_ui_root_components)
     assertions.is_integer(width)
     assertions.is_integer(height)
@@ -878,17 +895,7 @@ local function _initialize_ui(width, height, prev_ui_root_components)
             .newButton({ text = "Start" })
             :onRelease(function()
                 show_boxes = true
-
-                text_for_boxes = ""
-                for _, text_for_boxes_input in ipairs(text_for_boxes_inputs) do
-                    local text_part = text_for_boxes_input:getText()
-                    if text_part ~= "" then
-                        text_for_boxes = text_for_boxes
-                            .. (text_for_boxes ~= "" and " " or "")
-                            .. text_part
-                    end
-                end
-
+                text_for_boxes = _get_text_from_text_inputs()
                 is_menu = false
 
                 gooi.setGroupVisible("boxes-settings", false)
