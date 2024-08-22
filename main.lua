@@ -688,6 +688,11 @@ local function _get_visible_gooi_components_by_type(component_type)
     return visible_components
 end
 
+local function _get_start_button()
+    local visible_buttons = _get_visible_gooi_components_by_type("button")
+    return #visible_buttons == 1 and visible_buttons[1] or nil
+end
+
 local function _initialize_ui(width, height, prev_ui_root_components)
     assertions.is_integer(width)
     assertions.is_integer(height)
@@ -1052,9 +1057,8 @@ function love.keypressed(key, scancode)
     if key == "escape" then
         love.event.quit()
     elseif key == "return" then
-        local visible_buttons = _get_visible_gooi_components_by_type("button")
-        if #visible_buttons == 1 then
-            local start_button = visible_buttons[1]
+        local start_button = _get_start_button()
+        if start_button then
             _press_gooi_component(start_button)
         end
     elseif key == "tab" then
