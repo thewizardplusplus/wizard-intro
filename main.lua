@@ -165,7 +165,7 @@ local function _initialize_logo(width, height, prev_logo)
     if not logo then
         logo = { opacity = 0 }
 
-        logo.image = love.graphics.newImage("resources/logo.png")
+        logo.image = love.graphics.newImage("resources/Logo/Logo.png")
         center:setupScreen(
             logo.image:getPixelWidth(),
             logo.image:getPixelHeight()
@@ -934,8 +934,11 @@ end
 function love.load()
     math.randomseed(os.time())
 
-    box_audio = love.audio.newSource("resources/SlideOut.mp3", "static")
-    text_audio = love.audio.newSource("resources/Typing.mp3", "static")
+    box_audio = love.audio.newSource(
+        "resources/SlideOut/SlideOut.mp3",
+        "static"
+    )
+    text_audio = love.audio.newSource("resources/Typing/Typing.mp3", "static")
 
     ui_root_components = _initialize_ui(
         love.graphics.getWidth(),
