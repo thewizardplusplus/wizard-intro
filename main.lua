@@ -768,10 +768,8 @@ local function _initialize_ui(width, height, prev_ui_root_components)
     end)
 
     local text_for_boxes_inputs = {}
-    for index = 1, TEXT_INPUT_COUNT do
-        local text_for_boxes_input = gooi.newText({
-            text = index == 1 and "Hello, World!" or "",
-        })
+    for _ = 1, TEXT_INPUT_COUNT do
+        local text_for_boxes_input = gooi.newText({ text = "" })
         table.insert(text_for_boxes_inputs, text_for_boxes_input)
     end
 
