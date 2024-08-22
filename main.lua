@@ -714,6 +714,21 @@ local function _get_text_from_text_inputs()
     return text
 end
 
+local function _update_boxes_settings()
+    local text_inputs = _get_text_inputs()
+    if #text_inputs == 0 then
+        return
+    end
+
+    local start_button = _get_start_button()
+    if not start_button then
+        return
+    end
+
+    local has_text = _get_text_from_text_inputs() ~= ""
+    start_button:setEnabled(has_text)
+end
+
 local function _initialize_ui(width, height, prev_ui_root_components)
     assertions.is_integer(width)
     assertions.is_integer(height)
@@ -882,6 +897,18 @@ local function _initialize_ui(width, height, prev_ui_root_components)
     gooi.setGroupVisible("field-settings", false)
     table.insert(ui_root_components, field_settings_grid)
 
+    local boxes_settings_start_button = gooi
+        .newButton({ text = "Start" })
+        :onRelease(function()
+            show_boxes = true
+            text_for_boxes = _get_text_from_text_inputs()
+            is_menu = false
+
+            gooi.setGroupVisible("boxes-settings", false)
+            _initialize_scene()
+        end)
+    boxes_settings_start_button:setEnabled(false)
+
     local boxes_settings_grid = gooi.newPanel({
         x = (width - menu_width) / 2,
         y = (height - menu_height) / 2,
@@ -894,18 +921,7 @@ local function _initialize_ui(width, height, prev_ui_root_components)
     for _, text_for_boxes_input in ipairs(text_for_boxes_inputs) do
         boxes_settings_grid:add(text_for_boxes_input)
     end
-    boxes_settings_grid:add(
-        gooi
-            .newButton({ text = "Start" })
-            :onRelease(function()
-                show_boxes = true
-                text_for_boxes = _get_text_from_text_inputs()
-                is_menu = false
-
-                gooi.setGroupVisible("boxes-settings", false)
-                _initialize_scene()
-            end)
-    )
+    boxes_settings_grid:add(boxes_settings_start_button)
     gooi.setGroupVisible("boxes-settings", false)
     table.insert(ui_root_components, boxes_settings_grid)
 
@@ -1097,6 +1113,7 @@ function love.keypressed(key, scancode)
     end
 
     gooi.keypressed(key, scancode)
+    _update_boxes_settings()
 end
 
 function love.keyreleased(key, scancode)
@@ -1104,12 +1121,14 @@ function love.keyreleased(key, scancode)
     assertions.is_string(scancode)
 
     gooi.keyreleased(key, scancode)
+    _update_boxes_settings()
 end
 
 function love.textinput(text)
     assertions.is_string(text)
 
     gooi.textinput(text)
+    _update_boxes_settings()
 end
 
 function love.mousepressed()
