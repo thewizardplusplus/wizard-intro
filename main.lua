@@ -16,14 +16,14 @@ local SYSLText = require("sysl-text")
 local moonshine = require("moonshine")
 require("gooi")
 
-local UPDATE_PERIOD = 0.25
 local START_DELAY = 1
+local FIELD_POPULATING_PERIOD = 0.25
+-- at least 5 s plus allowance
+local FIELD_POPULATING_DURATION = 5.5
 local MIN_SIDE_CELL_COUNT = love.system.getOS() ~= "Android" and 30 or 25
 local FIELD_FILLING = 0.25
 local CELL_PADDING = 0.1
 local CELL_BORDER = 0.125
--- at least 5 s plus allowance
-local FIELD_POPULATING_DURATION = 5.5
 local LOGO_PADDING = 0.1
 local LOGO_FADDING_START_DELAY = 1
 local LOGO_FADDING_FINISH_DELAY = 0.5
@@ -131,7 +131,7 @@ local function _initialize_field(width, height)
 
     field.ticker = tick.delay(
         function()
-            field.can_be_updated = true
+            field.can_be_populated = true
         end,
         START_DELAY
     )
@@ -955,12 +955,12 @@ function love.update(dt)
     total_dt = total_dt + dt
     -- cannot use the `tick.recur()` function for this
     -- due to a slowdown on Android
-    if total_dt > UPDATE_PERIOD then
-        if field.can_be_updated then
+    if total_dt > FIELD_POPULATING_PERIOD then
+        if field.can_be_populated then
             field.inner_field = life.populate(field.inner_field)
         end
 
-        total_dt = total_dt - UPDATE_PERIOD
+        total_dt = total_dt - FIELD_POPULATING_PERIOD
     end
 
     if show_boxes then
