@@ -1,5 +1,24 @@
 # Change Log
 
+## [v1.4.1](https://github.com/thewizardplusplus/wizard-intro/tree/v1.4.1) (2024-08-22)
+
+Improve the menu and settings and the code style.
+
+- fix the scene resetting on resizing (including sounds);
+- menu and settings:
+  - improve the menu size and layout;
+  - fix the menu switching (hide the last menu page);
+  - fix the support for <kbd>Backspace</kbd> on Android;
+  - support for pressing the `Start` buttons by <kbd>Enter</kbd>;
+  - text rectangle settings:
+    - autofocus the first text rectangle input;
+    - support for focus switching between the text rectangle inputs by <kbd>Tab</kbd> and <kbd>Shift+Tab</kbd>;
+    - remove the default text from the text rectangle inputs;
+    - disable the `Start` button if there is no text in the text rectangle inputs;
+- code style:
+  - use the [luatypechecks](https://github.com/thewizardplusplus/luatypechecks) library;
+  - apply the linter.
+
 ## [v1.4.0](https://github.com/thewizardplusplus/wizard-intro/tree/v1.4.0) (2024-08-19)
 
 Add menu and settings and fix the bugs with drawing of the text rectangles.
