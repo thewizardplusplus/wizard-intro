@@ -693,14 +693,18 @@ local function _get_start_button()
     return #visible_buttons == 1 and visible_buttons[1] or nil
 end
 
-local function _get_text_from_text_inputs()
+local function _get_text_inputs()
     local visible_text_inputs = _get_visible_gooi_components_by_type("text")
     table.sort(visible_text_inputs, function(component_one, component_two)
         return component_one.id < component_two.id
     end)
 
+    return visible_text_inputs
+end
+
+local function _get_text_from_text_inputs()
     local text = ""
-    for _, text_input in ipairs(visible_text_inputs) do
+    for _, text_input in ipairs(_get_text_inputs()) do
         local text_part = text_input:getText()
         if text_part ~= "" then
             text = text .. (text ~= "" and " " or "") .. text_part
@@ -1069,13 +1073,10 @@ function love.keypressed(key, scancode)
             _press_gooi_component(start_button)
         end
     elseif key == "tab" then
-        local visible_text_inputs = _get_visible_gooi_components_by_type("text")
-        table.sort(visible_text_inputs, function(component_one, component_two)
-            return component_one.id < component_two.id
-        end)
+        local text_inputs = _get_text_inputs()
 
         local focused_index = -1
-        for index, text_input in ipairs(visible_text_inputs) do
+        for index, text_input in ipairs(text_inputs) do
             if text_input.hasFocus then
                 focused_index = index
                 break
@@ -1088,10 +1089,10 @@ function love.keypressed(key, scancode)
                 or love.keyboard.isDown("rshift") then
                 next_index = math.max(next_index - 1, 1)
             else
-                next_index = math.min(next_index + 1, #visible_text_inputs)
+                next_index = math.min(next_index + 1, #text_inputs)
             end
 
-            _press_gooi_component(visible_text_inputs[next_index])
+            _press_gooi_component(text_inputs[next_index])
         end
     end
 
