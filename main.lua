@@ -47,6 +47,7 @@ local MENU_WIDTH = 0.75
 local MENU_HEIGHT = 0.75
 local UI_FONT_SIZE = 0.05
 local TEXT_INPUT_COUNT = 7
+local SCREENCAST_OUTPUT_PERIOD = 0.1
 
 local use_pale_field_mode = false
 local use_transparent_field_mode = false
@@ -64,6 +65,7 @@ local box_audio
 local text_audio
 local total_dt
 local is_menu
+local is_screencast
 local ui_root_components
 local ui_selected_app_mode
 
@@ -631,6 +633,46 @@ local function _reset_boxes(boxes) -- luacheck: no redefined
     end
 end
 
+local function _start_screencast()
+    if is_screencast then
+        return
+    end
+
+    local screencast_coroutine = coroutine.create(function()
+        local output, err = io.popen([[echo "Hello, World!"]])
+        if err ~= nil then
+            error("unable to open the pipe: " .. err)
+        end
+
+        for line in output:lines() do
+            coroutine.yield(line)
+        end
+
+        output:close()
+        return false
+    end)
+
+    local screencast_ticker
+    screencast_ticker = tick.recur(
+        function()
+            local ok, result = coroutine.resume(screencast_coroutine)
+            if not ok then
+                error("error occurred during the screencast: " .. result)
+            end
+
+            if not result then
+                screencast_ticker:stop()
+                return
+            end
+
+            print(result)
+        end,
+        SCREENCAST_OUTPUT_PERIOD
+    )
+
+    is_screencast = true
+end
+
 local function _initialize_scene()
     local width = love.graphics.getWidth()
     local height = love.graphics.getHeight()
@@ -662,6 +704,8 @@ local function _initialize_scene()
 
     love.mouse.setVisible(false)
     love.graphics.setBackgroundColor({0.3, 0.3, 1})
+
+    _start_screencast()
 end
 
 local function _reset_scene()
@@ -945,6 +989,7 @@ function love.load()
         love.graphics.getHeight()
     )
     is_menu = true
+    is_screencast = false
 end
 
 function love.update(dt)
@@ -1078,6 +1123,8 @@ function love.resize(width, height)
 
     ui_root_components = _initialize_ui(width, height, ui_root_components)
     is_menu = true
+    -- don't reset `is_screencast` here -
+    -- it should be updated only once
 end
 
 function love.keypressed(key, scancode)
