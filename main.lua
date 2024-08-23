@@ -638,6 +638,14 @@ local function _start_screencast()
         return
     end
 
+    local current_timestamp = os.date("%FT%T%z")
+    local screencast_name = string.format(
+        "screencasts/%s_%s.mkv",
+        ui_selected_app_mode,
+        current_timestamp
+    )
+    print(screencast_name)
+
     local screencast_coroutine = coroutine.create(function()
         local output, err = io.popen([[echo "Hello, World!"]])
         if err ~= nil then
