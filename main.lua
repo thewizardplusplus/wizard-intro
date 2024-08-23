@@ -644,10 +644,19 @@ local function _start_screencast()
         ui_selected_app_mode,
         current_timestamp
     )
-    print(screencast_name)
+
+    -- https://trac.ffmpeg.org/wiki/Capture/Desktop#Linux
+    local screencast_command = string.format(
+        "ffmpeg "
+            .. "-f x11grab -framerate 24 -i :0.0 "
+            .. "-f alsa -ac 2 -i hw:0,0 "
+            .. "%s 2>&1",
+        screencast_name
+    )
+    print(screencast_command)
 
     local screencast_coroutine = coroutine.create(function()
-        local output, err = io.popen([[echo "Hello, World!"]])
+        local output, err = io.popen(screencast_command)
         if err ~= nil then
             error("unable to open the pipe: " .. err)
         end
