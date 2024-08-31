@@ -661,8 +661,32 @@ local function _start_screencast()
             error("unable to open the pipe: " .. err)
         end
 
-        for line in output:lines() do
-            coroutine.yield(line)
+        local buffer = ""
+        while true do
+            local data, err = output:read("*a")
+            if err ~= nil then
+                error("unable to read the pipe output: " .. err)
+            end
+
+            buffer = buffer .. data
+
+            local has_lines = false
+            while true do
+                local line_break = string.find(buffer, "\n", 1, true)
+                if line_break == nil then
+                    break
+                end
+
+                local line = string.sub(buffer, 1, line_break - 1)
+                coroutine.yield(line)
+
+                buffer = string.sub(buffer, line_break + 1)
+                has_lines = true
+            end
+
+            if not has_lines then
+                coroutine.yield("")
+            end
         end
 
         output:close()
@@ -682,7 +706,9 @@ local function _start_screencast()
                 return
             end
 
-            print(result)
+            if result ~= "" then
+                print(result)
+            end
         end,
         SCREENCAST_OUTPUT_PERIOD
     )
