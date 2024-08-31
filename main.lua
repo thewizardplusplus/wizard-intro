@@ -652,10 +652,13 @@ local function _start_screencast()
     )
 
     -- https://trac.ffmpeg.org/wiki/Capture/Desktop#Linux
+    -- https://trac.ffmpeg.org/wiki/Capture/Desktop#LosslessRecording
     local screencast_command = string.format(
         "ffmpeg "
             .. "-f x11grab -framerate 24 -i :0.0 "
             .. "-f alsa -ac 2 -i hw:0,0 "
+            .. "-c:v libx264rgb -crf 0 -preset ultrafast -color_range 2 "
+            .. "-c:a pcm_s16le "
             .. "%s &",
         screencast_name
     )
