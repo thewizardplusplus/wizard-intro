@@ -47,7 +47,6 @@ local MENU_WIDTH = 0.75
 local MENU_HEIGHT = 0.75
 local UI_FONT_SIZE = 0.05
 local TEXT_INPUT_COUNT = 7
-local SCREENCAST_OUTPUT_PERIOD = 0.1
 
 local use_pale_field_mode = false
 local use_transparent_field_mode = false
@@ -650,68 +649,15 @@ local function _start_screencast()
         "ffmpeg "
             .. "-f x11grab -framerate 24 -i :0.0 "
             .. "-f alsa -ac 2 -i hw:0,0 "
-            .. "%s 2>&1",
+            .. "%s &",
         screencast_name
     )
     print(screencast_command)
 
-    local screencast_coroutine = coroutine.create(function()
-        local output, err = io.popen(screencast_command)
-        if err ~= nil then
-            error("unable to open the pipe: " .. err)
-        end
-
-        local buffer = ""
-        while true do
-            local data, err = output:read("*a")
-            if err ~= nil then
-                error("unable to read the pipe output: " .. err)
-            end
-
-            buffer = buffer .. data
-
-            local has_lines = false
-            while true do
-                local line_break = string.find(buffer, "\n", 1, true)
-                if line_break == nil then
-                    break
-                end
-
-                local line = string.sub(buffer, 1, line_break - 1)
-                coroutine.yield(line)
-
-                buffer = string.sub(buffer, line_break + 1)
-                has_lines = true
-            end
-
-            if not has_lines then
-                coroutine.yield("")
-            end
-        end
-
-        output:close()
-        return false
-    end)
-
-    local screencast_ticker
-    screencast_ticker = tick.recur(
-        function()
-            local ok, result = coroutine.resume(screencast_coroutine)
-            if not ok then
-                error("error occurred during the screencast: " .. result)
-            end
-
-            if not result then
-                screencast_ticker:stop()
-                return
-            end
-
-            if result ~= "" then
-                print(result)
-            end
-        end,
-        SCREENCAST_OUTPUT_PERIOD
-    )
+    local _, err = os.execute(screencast_command)
+    if err ~= nil then
+        error("unable to execute the ffmpeg tool: " .. err)
+    end
 
     is_screencast = true
 end
@@ -1230,4 +1176,9 @@ end
 
 function love.mousereleased()
     gooi.released()
+end
+
+function love.quit()
+    os.execute("killall --signal INT --wait ffmpeg")
+    return false
 end
