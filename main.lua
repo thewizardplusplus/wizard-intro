@@ -47,6 +47,7 @@ local MENU_WIDTH = 0.75
 local MENU_HEIGHT = 0.75
 local UI_FONT_SIZE = 0.05
 local TEXT_INPUT_COUNT = 7
+local SCREENCAST_ADDITIONAL_DELAY = 5
 
 local use_pale_field_mode = false
 local use_transparent_field_mode = false
@@ -134,13 +135,15 @@ local function _initialize_field(width, height)
         function()
             field.can_be_populated = true
         end,
-        START_DELAY
+        START_DELAY + SCREENCAST_ADDITIONAL_DELAY
     )
     field.finish_ticker = tick.delay(
         function()
             love.event.quit()
         end,
-        START_DELAY + FIELD_POPULATING_DURATION
+        START_DELAY
+            + FIELD_POPULATING_DURATION
+            + 2 * SCREENCAST_ADDITIONAL_DELAY
     )
 
     return field
@@ -197,7 +200,9 @@ local function _initialize_logo(width, height, prev_logo)
     local fadding_duration_on = logo.foreground_audio:getDuration()
     logo.fadding_in = flux.to(logo, fadding_duration_on, { opacity = 1 })
         :ease("quadout")
-        :delay(START_DELAY + LOGO_FADDING_START_DELAY)
+        :delay(
+            START_DELAY + LOGO_FADDING_START_DELAY + SCREENCAST_ADDITIONAL_DELAY
+        )
         :onstart(function()
             love.audio.play(logo.audios)
         end)
@@ -220,7 +225,7 @@ local function _initialize_logo(width, height, prev_logo)
                 function()
                     love.event.quit()
                 end,
-                LOGO_FADDING_FINISH_DELAY
+                LOGO_FADDING_FINISH_DELAY + SCREENCAST_ADDITIONAL_DELAY
             )
 
             logo.background_audio:stop()
@@ -573,7 +578,9 @@ local function _initialize_boxes(width, height, text)
     local box_above
     for index, line in ipairs(lines) do
         local moving_delay = index == 1
-            and START_DELAY + BOX_MOVING_START_DELAY
+            and START_DELAY
+                + BOX_MOVING_START_DELAY
+                + SCREENCAST_ADDITIONAL_DELAY
             or 0
         local box = _initialize_box(
             width,
@@ -598,7 +605,7 @@ local function _initialize_boxes(width, height, text)
                     function()
                         love.event.quit()
                     end,
-                    BOX_MOVING_FINISH_DELAY
+                    BOX_MOVING_FINISH_DELAY + SCREENCAST_ADDITIONAL_DELAY
                 )
             end
         end
