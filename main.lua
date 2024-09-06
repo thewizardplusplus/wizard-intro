@@ -48,6 +48,13 @@ local MENU_HEIGHT = 0.75
 local UI_FONT_SIZE = 0.05
 local TEXT_INPUT_COUNT = 7
 local SCREENCAST_ADDITIONAL_DELAY = 5
+local FFMPEG_ALSA_AUDIO_INPUT = "hw:0,0"
+local FFMPEG_PULSE_AUDIO_INPUT = "0"
+-- supported audio input devices: alsa, pulse
+local FFMPEG_AUDIO_INPUT_DEVICE = "pulse"
+local FFMPEG_FRAME_PIXEL_SIZE = 3
+local FFMPEG_PROBE_FRAME_COUNT = 5
+local FFMPEG_THREAD_QUEUE_SIZE = 4096
 
 local use_pale_field_mode = false
 local use_transparent_field_mode = false
@@ -639,7 +646,10 @@ local function _reset_boxes(boxes) -- luacheck: no redefined
     end
 end
 
-local function _start_screencast()
+local function _start_screencast(width, height)
+    assertions.is_integer(width)
+    assertions.is_integer(height)
+
     if is_screencast then
         return
     end
@@ -653,13 +663,24 @@ local function _start_screencast()
 
     -- https://trac.ffmpeg.org/wiki/Capture/Desktop#Linux
     -- https://trac.ffmpeg.org/wiki/Capture/Desktop#LosslessRecording
+    local probe_size =
+        width * height * FFMPEG_FRAME_PIXEL_SIZE * FFMPEG_PROBE_FRAME_COUNT
+    local audio_input = FFMPEG_AUDIO_INPUT_DEVICE == "alsa"
+        and FFMPEG_ALSA_AUDIO_INPUT
+        or FFMPEG_PULSE_AUDIO_INPUT
     local screencast_command = string.format(
         "ffmpeg "
-            .. "-f x11grab -framerate 24 -i :0.0 "
-            .. "-f alsa -ac 2 -i hw:0,0 "
+            .. "-f x11grab -framerate 24 -probesize %d -thread_queue_size %d "
+                .. "-i :0.0 "
+            .. "-f %s -ac 2 -thread_queue_size %d -i %s "
             .. "-c:v libx264rgb -crf 0 -preset ultrafast -color_range 2 "
             .. "-c:a pcm_s16le "
             .. "%s &",
+        probe_size,
+        FFMPEG_THREAD_QUEUE_SIZE,
+        FFMPEG_AUDIO_INPUT_DEVICE,
+        FFMPEG_THREAD_QUEUE_SIZE,
+        audio_input,
         screencast_name
     )
     print(screencast_command)
@@ -704,7 +725,7 @@ local function _initialize_scene()
     love.mouse.setVisible(false)
     love.graphics.setBackgroundColor({0.3, 0.3, 1})
 
-    _start_screencast()
+    _start_screencast(width, height)
 end
 
 local function _reset_scene()
