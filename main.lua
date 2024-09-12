@@ -76,6 +76,9 @@ local is_screencast
 local ui_root_components
 local ui_selected_app_mode
 
+-- forward declaration
+local _on_finish
+
 local function _is_instance_from_love_2d(value, type_name)
     assertions.is_string(type_name)
 
@@ -146,7 +149,7 @@ local function _initialize_field(width, height)
     )
     field.finish_ticker = tick.delay(
         function()
-            love.event.quit()
+            _on_finish()
         end,
         START_DELAY
             + FIELD_POPULATING_DURATION
@@ -230,7 +233,7 @@ local function _initialize_logo(width, height, prev_logo)
         :oncomplete(function()
             logo.ticker = tick.delay(
                 function()
-                    love.event.quit()
+                    _on_finish()
                 end,
                 LOGO_FADDING_FINISH_DELAY + SCREENCAST_ADDITIONAL_DELAY
             )
@@ -610,7 +613,7 @@ local function _initialize_boxes(width, height, text)
             box.on_text_end = function()
                 box.ticker = tick.delay(
                     function()
-                        love.event.quit()
+                        _on_finish()
                     end,
                     BOX_MOVING_FINISH_DELAY + SCREENCAST_ADDITIONAL_DELAY
                 )
@@ -993,6 +996,13 @@ local function _initialize_ui(width, height, prev_ui_root_components)
     love.graphics.setBackgroundColor({0.1, 0.1, 0.1})
 
     return ui_root_components
+end
+
+_on_finish = function()
+    _reset_scene()
+    love.graphics.setBackgroundColor({0.1, 0.1, 0.1})
+
+    is_menu = true
 end
 
 function love.load()
