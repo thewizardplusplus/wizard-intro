@@ -92,10 +92,18 @@ local function _is_instance_from_love_2d(value, type_name)
         and value:typeOf(type_name)
 end
 
-local function _run_in_background(code)
-    assertions.is_string(code)
+local function _execute_in_background(command)
+    assertions.is_string(command)
 
-    local thread = love.thread.newThread(code)
+    local thread = love.thread.newThread(string.format(
+        [[
+            local _, err = os.execute(%q)
+            if err ~= nil then
+                error("unable to execute the command: " .. err)
+            end
+        ]],
+        command
+    ))
     thread:start()
 
     return thread
@@ -1074,38 +1082,19 @@ function love.update(dt)
         end
 
         if #finalization_data.steps == 1 then
-            table.insert(finalization_data.steps, "> Step #1...")
+            table.insert(finalization_data.steps, "> Stop the screencast...")
 
-            finalization_thread = _run_in_background([[
-                local function sleep(seconds)
-                    local start = os.clock()
-                    while os.clock() - start < seconds do end
-                end
-
-                sleep(2)
-            ]])
+            finalization_thread = _execute_in_background(
+                "killall --signal INT --wait ffmpeg"
+            )
         elseif #finalization_data.steps == 2 then
             table.insert(finalization_data.steps, "> Step #2...")
 
-            finalization_thread = _run_in_background([[
-                local function sleep(seconds)
-                    local start = os.clock()
-                    while os.clock() - start < seconds do end
-                end
-
-                sleep(1)
-            ]])
+            finalization_thread = _execute_in_background("true")
         elseif #finalization_data.steps == 3 then
             table.insert(finalization_data.steps, "> Step #3...")
 
-            finalization_thread = _run_in_background([[
-                local function sleep(seconds)
-                    local start = os.clock()
-                    while os.clock() - start < seconds do end
-                end
-
-                sleep(3)
-            ]])
+            finalization_thread = _execute_in_background("true")
         elseif #finalization_data.steps == 4 then
             table.insert(finalization_data.steps, "All is done!")
 
@@ -1317,9 +1306,4 @@ end
 
 function love.mousereleased()
     gooi.released()
-end
-
-function love.quit()
-    os.execute("killall --signal INT --wait ffmpeg")
-    return false
 end
