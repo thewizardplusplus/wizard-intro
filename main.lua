@@ -57,6 +57,7 @@ local FFMPEG_PROBE_FRAME_COUNT = 5
 local FFMPEG_THREAD_QUEUE_SIZE = 4096
 local FINALIZATION_STEPS_OFFSET = 0.125
 local FINALIZATION_STEPS_MARGIN = 0.0625
+local FINALIZATION_FINISH_DELAY = 1
 
 local use_pale_field_mode = false
 local use_transparent_field_mode = false
@@ -78,6 +79,7 @@ local is_screencast
 local ui_root_components
 local ui_selected_app_mode
 local finalization_data
+local finalization_thread
 
 -- forward declaration
 local _on_finish
@@ -88,6 +90,15 @@ local function _is_instance_from_love_2d(value, type_name)
     return value ~= nil
         and checks.is_callable(value.typeOf)
         and value:typeOf(type_name)
+end
+
+local function _run_in_background(code)
+    assertions.is_string(code)
+
+    local thread = love.thread.newThread(code)
+    thread:start()
+
+    return thread
 end
 
 local function _initialize_field(width, height)
@@ -1028,13 +1039,7 @@ _on_finish = function(width, height)
         offset = finalization_steps_offset,
         margin = finalization_steps_margin,
         text_height = text_size.height,
-        steps = {
-            "> Step #1...",
-            "> Step #2...",
-            "> Step #3...",
-            "> Step #4...",
-            "> Step #5...",
-        },
+        steps = {"Finalization:"},
     }
 end
 
@@ -1059,8 +1064,59 @@ end
 function love.update(dt)
     assertions.is_number(dt)
 
+    tick.update(dt)
+
     if is_menu then
         gooi.update(dt)
+
+        if finalization_thread ~= nil and finalization_thread:isRunning() then
+            return
+        end
+
+        if #finalization_data.steps == 1 then
+            table.insert(finalization_data.steps, "> Step #1...")
+
+            finalization_thread = _run_in_background([[
+                local function sleep(seconds)
+                    local start = os.clock()
+                    while os.clock() - start < seconds do end
+                end
+
+                sleep(2)
+            ]])
+        elseif #finalization_data.steps == 2 then
+            table.insert(finalization_data.steps, "> Step #2...")
+
+            finalization_thread = _run_in_background([[
+                local function sleep(seconds)
+                    local start = os.clock()
+                    while os.clock() - start < seconds do end
+                end
+
+                sleep(1)
+            ]])
+        elseif #finalization_data.steps == 3 then
+            table.insert(finalization_data.steps, "> Step #3...")
+
+            finalization_thread = _run_in_background([[
+                local function sleep(seconds)
+                    local start = os.clock()
+                    while os.clock() - start < seconds do end
+                end
+
+                sleep(3)
+            ]])
+        elseif #finalization_data.steps == 4 then
+            table.insert(finalization_data.steps, "All is done!")
+
+            tick.delay(
+                function()
+                    love.event.quit()
+                end,
+                FINALIZATION_FINISH_DELAY
+            )
+        end
+
         return
     end
 
@@ -1091,7 +1147,6 @@ function love.update(dt)
     end
 
     flux.update(dt)
-    tick.update(dt)
 end
 
 function love.draw()
