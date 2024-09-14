@@ -55,6 +55,8 @@ local FFMPEG_AUDIO_INPUT_DEVICE = "pulse"
 local FFMPEG_FRAME_PIXEL_SIZE = 3
 local FFMPEG_PROBE_FRAME_COUNT = 5
 local FFMPEG_THREAD_QUEUE_SIZE = 4096
+local FINALIZATION_STEPS_OFFSET = 0.125
+local FINALIZATION_STEPS_MARGIN = 0.0625
 
 local use_pale_field_mode = false
 local use_transparent_field_mode = false
@@ -75,6 +77,7 @@ local is_menu
 local is_screencast
 local ui_root_components
 local ui_selected_app_mode
+local finalization_data
 
 -- forward declaration
 local _on_finish
@@ -149,7 +152,7 @@ local function _initialize_field(width, height)
     )
     field.finish_ticker = tick.delay(
         function()
-            _on_finish()
+            _on_finish(width, height)
         end,
         START_DELAY
             + FIELD_POPULATING_DURATION
@@ -233,7 +236,7 @@ local function _initialize_logo(width, height, prev_logo)
         :oncomplete(function()
             logo.ticker = tick.delay(
                 function()
-                    _on_finish()
+                    _on_finish(width, height)
                 end,
                 LOGO_FADDING_FINISH_DELAY + SCREENCAST_ADDITIONAL_DELAY
             )
@@ -613,7 +616,7 @@ local function _initialize_boxes(width, height, text)
             box.on_text_end = function()
                 box.ticker = tick.delay(
                     function()
-                        _on_finish()
+                        _on_finish(width, height)
                     end,
                     BOX_MOVING_FINISH_DELAY + SCREENCAST_ADDITIONAL_DELAY
                 )
@@ -998,11 +1001,41 @@ local function _initialize_ui(width, height, prev_ui_root_components)
     return ui_root_components
 end
 
-_on_finish = function()
+_on_finish = function(width, height)
+    assertions.is_integer(width)
+    assertions.is_integer(height)
+
+    local min_dimension = math.min(width, height)
+
+    local ui_font_size = min_dimension * UI_FONT_SIZE
+    local finalization_steps_offset = min_dimension * FINALIZATION_STEPS_OFFSET
+    local finalization_steps_margin = min_dimension * FINALIZATION_STEPS_MARGIN
+
     _reset_scene()
+
+    local ui_font = love.graphics.newFont(
+        "resources/Roboto/Roboto-Regular.ttf",
+        ui_font_size
+    )
+    local text_size = _get_text_size("> Dummy...", ui_font)
+    love.graphics.setFont(ui_font)
+
     love.graphics.setBackgroundColor({0.1, 0.1, 0.1})
+    love.graphics.setColor({1, 1, 1})
 
     is_menu = true
+    finalization_data = {
+        offset = finalization_steps_offset,
+        margin = finalization_steps_margin,
+        text_height = text_size.height,
+        steps = {
+            "> Step #1...",
+            "> Step #2...",
+            "> Step #3...",
+            "> Step #4...",
+            "> Step #5...",
+        },
+    }
 end
 
 function love.load()
@@ -1020,6 +1053,7 @@ function love.load()
     )
     is_menu = true
     is_screencast = false
+    finalization_data = { steps = {} }
 end
 
 function love.update(dt)
@@ -1063,6 +1097,17 @@ end
 function love.draw()
     if is_menu then
         gooi.draw()
+
+        for index, step in ipairs(finalization_data.steps) do
+            love.graphics.print(
+                step,
+                finalization_data.offset,
+                (finalization_data.text_height + finalization_data.margin)
+                    * (index - 1)
+                    + finalization_data.offset
+            )
+        end
+
         return
     end
 
