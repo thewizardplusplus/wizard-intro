@@ -81,6 +81,8 @@ local ui_root_components
 local ui_selected_app_mode
 local finalization_data
 local finalization_thread
+local start_time
+local finish_time
 
 -- forward declaration
 local _on_finish
@@ -752,6 +754,8 @@ local function _initialize_scene()
     love.graphics.setBackgroundColor({0.3, 0.3, 1})
 
     _start_screencast(width, height)
+
+    start_time = os.clock()
 end
 
 local function _reset_scene()
@@ -1050,6 +1054,7 @@ _on_finish = function(width, height)
         text_height = text_size.height,
         steps = {"Finalization:"},
     }
+    finish_time = os.clock()
 end
 
 function love.load()
@@ -1096,9 +1101,10 @@ function love.update(dt)
                 "%.([^%.]+)$", "_trimmed.%1"
             )
             local trimming_command = string.format(
-                "ffmpeg -i %s -ss %.3f -c copy %s",
+                "ffmpeg -i %s -ss %.3f -to %.3f -c copy %s",
                 screencast_name,
                 START_DELAY + SCREENCAST_ADDITIONAL_DELAY,
+                finish_time - start_time - SCREENCAST_ADDITIONAL_DELAY,
                 trimmed_screencast_name
             )
             print(trimming_command)
