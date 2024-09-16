@@ -76,6 +76,7 @@ local text_audio
 local total_dt
 local is_menu
 local is_screencast
+local screencast_name
 local ui_root_components
 local ui_selected_app_mode
 local finalization_data
@@ -680,7 +681,7 @@ local function _start_screencast(width, height)
     end
 
     local current_timestamp = os.date("%FT%T%z")
-    local screencast_name = string.format(
+    screencast_name = string.format(
         "screencasts/%s_%s.mkv",
         ui_selected_app_mode,
         current_timestamp
@@ -1088,14 +1089,22 @@ function love.update(dt)
                 "killall --signal INT --wait ffmpeg"
             )
         elseif #finalization_data.steps == 2 then
-            table.insert(finalization_data.steps, "> Step #2...")
+            table.insert(finalization_data.steps, "> Trim the screencast...")
 
-            finalization_thread = _execute_in_background("true")
+            local trimmed_screencast_name = string.gsub(
+                screencast_name,
+                "%.([^%.]+)$", "_trimmed.%1"
+            )
+            local trimming_command = string.format(
+                "ffmpeg -i %s -ss %.3f -c copy %s",
+                screencast_name,
+                START_DELAY + SCREENCAST_ADDITIONAL_DELAY,
+                trimmed_screencast_name
+            )
+            print(trimming_command)
+
+            finalization_thread = _execute_in_background(trimming_command)
         elseif #finalization_data.steps == 3 then
-            table.insert(finalization_data.steps, "> Step #3...")
-
-            finalization_thread = _execute_in_background("true")
-        elseif #finalization_data.steps == 4 then
             table.insert(finalization_data.steps, "All is done!")
 
             tick.delay(
