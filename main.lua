@@ -50,8 +50,8 @@ local TEXT_INPUT_COUNT = 7
 local SCREENCAST_ADDITIONAL_DELAY = 5
 local FFMPEG_ALSA_AUDIO_INPUT = "hw:0,0"
 local FFMPEG_PULSE_AUDIO_INPUT = "0"
--- supported audio input devices: alsa, pulse
-local FFMPEG_AUDIO_INPUT_DEVICE = "pulse"
+-- supported audio input devices: none, alsa, pulse
+local FFMPEG_AUDIO_INPUT_DEVICE = "none"
 local FFMPEG_FRAME_PIXEL_SIZE = 3
 local FFMPEG_PROBE_FRAME_COUNT = 5
 local FFMPEG_THREAD_QUEUE_SIZE = 4096
@@ -691,26 +691,40 @@ local function _start_screencast(width, height)
 
     -- https://trac.ffmpeg.org/wiki/Capture/Desktop#Linux
     -- https://trac.ffmpeg.org/wiki/Capture/Desktop#LosslessRecording
+    local screencast_command
     local probe_size =
         width * height * FFMPEG_FRAME_PIXEL_SIZE * FFMPEG_PROBE_FRAME_COUNT
-    local audio_input = FFMPEG_AUDIO_INPUT_DEVICE == "alsa"
-        and FFMPEG_ALSA_AUDIO_INPUT
-        or FFMPEG_PULSE_AUDIO_INPUT
-    local screencast_command = string.format(
-        "ffmpeg "
-            .. "-f x11grab -framerate 24 -probesize %d -thread_queue_size %d "
-                .. "-i :0.0 "
-            .. "-f %s -ac 2 -thread_queue_size %d -i %s "
-            .. "-c:v libx264rgb -crf 0 -preset ultrafast -color_range 2 "
-            .. "-c:a pcm_s16le "
-            .. "%s &",
-        probe_size,
-        FFMPEG_THREAD_QUEUE_SIZE,
-        FFMPEG_AUDIO_INPUT_DEVICE,
-        FFMPEG_THREAD_QUEUE_SIZE,
-        audio_input,
-        screencast_name
-    )
+    if FFMPEG_AUDIO_INPUT_DEVICE ~= "none" then
+        local audio_input = FFMPEG_AUDIO_INPUT_DEVICE == "alsa"
+            and FFMPEG_ALSA_AUDIO_INPUT
+            or FFMPEG_PULSE_AUDIO_INPUT
+        screencast_command = string.format(
+            "ffmpeg "
+                .. "-f x11grab -framerate 24 -probesize %d "
+                    .. "-thread_queue_size %d -i :0.0 "
+                .. "-f %s -ac 2 -thread_queue_size %d -i %s "
+                .. "-c:v libx264rgb -crf 0 -preset ultrafast -color_range 2 "
+                .. "-c:a pcm_s16le "
+                .. "%s &",
+            probe_size,
+            FFMPEG_THREAD_QUEUE_SIZE,
+            FFMPEG_AUDIO_INPUT_DEVICE,
+            FFMPEG_THREAD_QUEUE_SIZE,
+            audio_input,
+            screencast_name
+        )
+    else
+        screencast_command = string.format(
+            "ffmpeg "
+                .. "-f x11grab -framerate 24 -probesize %d "
+                    .. "-thread_queue_size %d -i :0.0 "
+                .. "-c:v libx264rgb -crf 0 -preset ultrafast -color_range 2 "
+                .. "%s &",
+            probe_size,
+            FFMPEG_THREAD_QUEUE_SIZE,
+            screencast_name
+        )
+    end
     print(screencast_command)
 
     local _, err = os.execute(screencast_command)
