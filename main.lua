@@ -50,8 +50,8 @@ local TEXT_INPUT_COUNT = 7
 local SCREENCAST_ADDITIONAL_DELAY = 5
 local FFMPEG_ALSA_AUDIO_INPUT = "hw:0,0"
 local FFMPEG_PULSE_AUDIO_INPUT = "0"
--- supported audio input devices: none, alsa, pulse
-local FFMPEG_AUDIO_INPUT_DEVICE = "none"
+-- supported audio input devices: alsa, pulse
+local FFMPEG_AUDIO_INPUT_DEVICE = "pulse"
 local FFMPEG_FRAME_PIXEL_SIZE = 3
 local FFMPEG_PROBE_FRAME_COUNT = 5
 local FFMPEG_THREAD_QUEUE_SIZE = 4096
@@ -695,7 +695,7 @@ local function _start_screencast(width, height)
     local screencast_command
     local probe_size =
         width * height * FFMPEG_FRAME_PIXEL_SIZE * FFMPEG_PROBE_FRAME_COUNT
-    if FFMPEG_AUDIO_INPUT_DEVICE ~= "none" then
+    if use_sounds then
         local audio_input = FFMPEG_AUDIO_INPUT_DEVICE == "alsa"
             and FFMPEG_ALSA_AUDIO_INPUT
             or FFMPEG_PULSE_AUDIO_INPUT
