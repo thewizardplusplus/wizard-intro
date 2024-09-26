@@ -907,25 +907,25 @@ local function _initialize_ui(width, height, prev_ui_root_components)
         text = "> Box",
         radioGroup = "field-effect",
     })
-    boxblur_effect_check:setEnabled(false)
+    boxblur_effect_check:setEnabled(use_blur_field_mode)
 
     local fastgaussianblur_effect_check = gooi.newRadio({
         text = "> Fast Gaussian",
         radioGroup = "field-effect",
     })
-    fastgaussianblur_effect_check:setEnabled(false)
+    fastgaussianblur_effect_check:setEnabled(use_blur_field_mode)
 
     local gaussianblur_effect_check = gooi.newRadio({
         text = "> Gaussian",
         radioGroup = "field-effect",
     })
-    gaussianblur_effect_check:setEnabled(false)
+    gaussianblur_effect_check:setEnabled(use_blur_field_mode)
 
     local glow_effect_check = gooi.newRadio({
         text = "> Glow",
         radioGroup = "field-effect",
     })
-    glow_effect_check:setEnabled(false)
+    glow_effect_check:setEnabled(use_blur_field_mode)
 
     if field_blur_effect == "boxblur" then
         boxblur_effect_check:select()
@@ -937,9 +937,18 @@ local function _initialize_ui(width, height, prev_ui_root_components)
         glow_effect_check:select()
     end
 
-    local pale_mode_check = gooi.newCheck({ text = "Pale" })
-    local transparent_mode_check = gooi.newCheck({ text = "Transparent" })
-    local blur_mode_check = gooi.newCheck({ text = "Blur" })
+    local pale_mode_check = gooi.newCheck({
+        text = "Pale",
+        checked = use_pale_field_mode,
+    })
+    local transparent_mode_check = gooi.newCheck({
+        text = "Transparent",
+        checked = use_transparent_field_mode,
+    })
+    local blur_mode_check = gooi.newCheck({
+        text = "Blur",
+        checked = use_blur_field_mode,
+    })
     blur_mode_check:onRelease(function()
         local is_checked = blur_mode_check.checked
         boxblur_effect_check:setEnabled(is_checked)
