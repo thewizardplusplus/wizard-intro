@@ -27,6 +27,7 @@ local CELL_BORDER = 0.125
 local LOGO_PADDING = 0.1
 local LOGO_FADDING_START_DELAY = 1
 local LOGO_FADDING_FINISH_DELAY = 0.5
+local LOGO_FADDING_DURATION_ON = 3
 local LOGO_FADDING_DURATION_OFF = 1.75
 local LOGO_FOREGROUND_AUDIO_VOLUME = 0.625
 local LOGO_BACKGROUND_AUDIO_FADDING = 1
@@ -233,14 +234,20 @@ local function _initialize_logo(width, height, prev_logo)
     center:setBorders(logo_padding, logo_padding, logo_padding, logo_padding)
     center:apply()
 
-    local fadding_duration_on = logo.foreground_audio:getDuration()
+    local fadding_duration_on = LOGO_FADDING_DURATION_ON
+    if use_sounds then
+        fadding_duration_on = logo.foreground_audio:getDuration()
+    end
+
     logo.fadding_in = flux.to(logo, fadding_duration_on, { opacity = 1 })
         :ease("quadout")
         :delay(
             START_DELAY + LOGO_FADDING_START_DELAY + SCREENCAST_ADDITIONAL_DELAY
         )
         :onstart(function()
-            love.audio.play(logo.audios)
+            if use_sounds then
+                love.audio.play(logo.audios)
+            end
         end)
         :oncomplete(function()
             logo.foreground_audio:stop()
