@@ -37,6 +37,7 @@ local BOX_PADDING = love.system.getOS() ~= "Android" and 0.00375 or 0.00625
 local BOX_MIN_MARGIN = love.system.getOS() ~= "Android" and 0.00625 or 0.01375
 local BOX_MAX_MARGIN = 1.5 * (1 / MIN_SIDE_CELL_COUNT)
 local BOX_SHADOW = love.system.getOS() ~= "Android" and 0.00625 or 0.01375
+local BOX_MOVING_DURATION = 0.75
 local BOX_MOVING_START_DELAY = 1
 local BOX_MOVING_FINISH_DELAY = 1.5
 local BOX_TARGET_X = 0.9
@@ -541,13 +542,19 @@ local function _initialize_box(
         text_x = text_x,
     }
 
-    local moving_duration = box_audio:getDuration()
+    local moving_duration = BOX_MOVING_DURATION
+    if use_sounds then
+        moving_duration = box_audio:getDuration()
+    end
+
     box.start_moving = function()
         box.moving = flux.to(box, moving_duration, { x = box_target_x })
             :delay(moving_delay)
             :ease("cubicout")
             :onstart(function()
-                box_audio:play()
+                if use_sounds then
+                    box_audio:play()
+                end
             end)
             :oncomplete(function()
                 _reset_audios({box_audio})
@@ -555,7 +562,9 @@ local function _initialize_box(
                 text_box:send(text)
                 box.is_text_sent = true
 
-                text_audio:play()
+                if use_sounds then
+                    text_audio:play()
+                end
             end)
     end
 
