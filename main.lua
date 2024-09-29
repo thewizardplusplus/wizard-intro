@@ -49,6 +49,7 @@ local MENU_WIDTH = 0.75
 local MENU_HEIGHT = 0.75
 local UI_FONT_SIZE = 0.05
 local TEXT_INPUT_COUNT = 7
+local SCREENCAST_FPS = 24
 local SCREENCAST_ADDITIONAL_DELAY = 5
 local FFMPEG_ALSA_AUDIO_INPUT = "hw:0,0"
 local FFMPEG_PULSE_AUDIO_INPUT = "0"
@@ -113,6 +114,17 @@ local function _execute_in_background(command)
     thread:start()
 
     return thread
+end
+
+local function _round_to_modulus(number, modulus, rounding_kind)
+    assertions.is_number(number)
+    assertions.is_number(modulus)
+    assertions.is_enumeration(rounding_kind, {"floor", "ceil"})
+
+    local rounding_function = rounding_kind == "floor"
+        and math.floor
+        or math.ceil
+    return rounding_function(number * modulus) / modulus
 end
 
 local function _initialize_field(width, height)
@@ -717,12 +729,13 @@ local function _start_screencast(width, height)
             or FFMPEG_PULSE_AUDIO_INPUT
         screencast_command = string.format(
             "ffmpeg "
-                .. "-f x11grab -framerate 24 -probesize %d "
+                .. "-f x11grab -framerate %d -probesize %d "
                     .. "-thread_queue_size %d -i :0.0 "
                 .. "-f %s -ac 2 -thread_queue_size %d -i %s "
                 .. "-c:v libx264rgb -crf 0 -preset ultrafast -color_range 2 "
                 .. "-c:a pcm_s16le "
                 .. "%s &",
+            SCREENCAST_FPS,
             probe_size,
             FFMPEG_THREAD_QUEUE_SIZE,
             FFMPEG_AUDIO_INPUT_DEVICE,
@@ -733,10 +746,11 @@ local function _start_screencast(width, height)
     else
         screencast_command = string.format(
             "ffmpeg "
-                .. "-f x11grab -framerate 24 -probesize %d "
+                .. "-f x11grab -framerate %d -probesize %d "
                     .. "-thread_queue_size %d -i :0.0 "
                 .. "-c:v libx264rgb -crf 0 -preset ultrafast -color_range 2 "
                 .. "%s &",
+            SCREENCAST_FPS,
             probe_size,
             FFMPEG_THREAD_QUEUE_SIZE,
             screencast_name
@@ -1164,6 +1178,16 @@ function love.update(dt)
         elseif #finalization_data.steps == 2 then
             table.insert(finalization_data.steps, "> Trim the screencast...")
 
+            local rounded_start_time = _round_to_modulus(
+                START_DELAY + SCREENCAST_ADDITIONAL_DELAY,
+                SCREENCAST_FPS,
+                "ceil"
+            )
+            local rounded_finish_time = _round_to_modulus(
+                finish_time - start_time - SCREENCAST_ADDITIONAL_DELAY,
+                SCREENCAST_FPS,
+                "floor"
+            )
             local trimmed_screencast_name = string.gsub(
                 screencast_name,
                 "%.([^%.]+)$", "_trimmed.%1"
@@ -1171,8 +1195,8 @@ function love.update(dt)
             local trimming_command = string.format(
                 "ffmpeg -i %s -ss %.3f -to %.3f -c copy %s",
                 screencast_name,
-                START_DELAY + SCREENCAST_ADDITIONAL_DELAY,
-                finish_time - start_time - SCREENCAST_ADDITIONAL_DELAY,
+                rounded_start_time,
+                rounded_finish_time,
                 trimmed_screencast_name
             )
             print(trimming_command)
