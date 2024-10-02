@@ -72,6 +72,23 @@ _**Disclaimer:** this demo was written directly on an Android smartphone with th
     - between the silent and full-sounding modes;
     - whether or not to trim videos automatically.
 
+## Building
+
+Clone this repository:
+
+```
+$ git clone https://github.com/thewizardplusplus/wizard-intro.git
+$ cd wizard-intro
+```
+
+Build the game with the [makelove](https://github.com/pfirsich/makelove) tool:
+
+```
+$ makelove [appimage]
+```
+
+Take the required build from the corresponding subdirectory of the created `builds` directory.
+
 ## Running
 
 See for details: <https://love2d.org/wiki/Getting_Started#Running_Games>

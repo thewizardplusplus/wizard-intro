@@ -1,0 +1,4 @@
+name = "wizard-intro"
+love_files = ["::git-ls-tree::"] # all files tracked by git
+default_targets = ["appimage"]
+build_directory = "builds"
