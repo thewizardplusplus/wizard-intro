@@ -72,6 +72,7 @@ local show_logo = false
 local show_boxes = false
 local text_for_boxes = ""
 local use_sounds = false
+local use_trimming = false
 
 local field
 local logo
@@ -1035,7 +1036,7 @@ local function _initialize_ui(width, height, prev_ui_root_components)
                     gooi.setGroupVisible("boxes-settings", true)
                     _press_gooi_component(text_for_boxes_inputs[1])
                 else
-                    gooi.setGroupVisible("sounds-settings", true)
+                    gooi.setGroupVisible("misc-settings", true)
                 end
             end)
     )
@@ -1048,7 +1049,7 @@ local function _initialize_ui(width, height, prev_ui_root_components)
             text_for_boxes = _get_text_from_text_inputs()
 
             gooi.setGroupVisible("boxes-settings", false)
-            gooi.setGroupVisible("sounds-settings", true)
+            gooi.setGroupVisible("misc-settings", true)
         end)
     boxes_settings_start_button:setEnabled(false)
 
@@ -1072,35 +1073,40 @@ local function _initialize_ui(width, height, prev_ui_root_components)
         text = "Sounds",
         checked = use_sounds,
     })
+    local trimming_check = gooi.newCheck({
+        text = "Trimming",
+        checked = use_trimming,
+    })
 
-    local sounds_settings_grid = gooi.newPanel({
+    local misc_settings_grid = gooi.newPanel({
         x = (width - menu_width) / 2,
         y = (height - menu_height) / 2,
         w = menu_width,
         h = menu_height,
         layout = "grid 9x1",
-        group = "sounds-settings",
+        group = "misc-settings",
     })
-    sounds_settings_grid:setRowspan(8, 1, 2)
-    sounds_settings_grid:add(sounds_check)
-    sounds_settings_grid:add(
+    misc_settings_grid:setRowspan(8, 1, 2)
+    misc_settings_grid:add(sounds_check, trimming_check)
+    misc_settings_grid:add(
         gooi
             .newButton({ text = "Start" })
             :onRelease(function()
                 use_sounds = sounds_check.checked
+                use_trimming = trimming_check.checked
 
                 show_logo = ui_selected_app_mode == "logo"
                 show_boxes = ui_selected_app_mode == "text-rectangles"
                 is_menu = false
 
-                gooi.setGroupVisible("sounds-settings", false)
+                gooi.setGroupVisible("misc-settings", false)
 
                 _initialize_scene()
             end),
         "8,1"
     )
-    gooi.setGroupVisible("sounds-settings", false)
-    table.insert(ui_root_components, sounds_settings_grid)
+    gooi.setGroupVisible("misc-settings", false)
+    table.insert(ui_root_components, misc_settings_grid)
 
     love.mouse.setVisible(true)
     love.graphics.setBackgroundColor({0.1, 0.1, 0.1})
