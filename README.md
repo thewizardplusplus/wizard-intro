@@ -1,5 +1,7 @@
 # Wizard Intro
 
+[![lint](https://github.com/thewizardplusplus/wizard-intro/actions/workflows/lint.yaml/badge.svg)](https://github.com/thewizardplusplus/wizard-intro/actions/workflows/lint.yaml)
+
 ![](docs/screenshot_1.png)
 
 The demo to generate intros for my YouTube channel.
