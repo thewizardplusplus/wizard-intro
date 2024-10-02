@@ -58,6 +58,7 @@ local FFMPEG_AUDIO_INPUT_DEVICE = "pulse"
 local FFMPEG_FRAME_PIXEL_SIZE = 3
 local FFMPEG_PROBE_FRAME_COUNT = 5
 local FFMPEG_THREAD_QUEUE_SIZE = 4096
+local FFMPEG_STOP_COMMAND = "killall --signal INT --wait ffmpeg"
 local FINALIZATION_STEPS_OFFSET = 0.125
 local FINALIZATION_STEPS_MARGIN = 0.0625
 local FINALIZATION_FINISH_DELAY = 1
@@ -1172,9 +1173,7 @@ function love.update(dt)
         if #finalization_data.steps == 1 then
             table.insert(finalization_data.steps, "> Stop the screencast...")
 
-            finalization_thread = _execute_in_background(
-                "killall --signal INT --wait ffmpeg"
-            )
+            finalization_thread = _execute_in_background(FFMPEG_STOP_COMMAND)
         elseif #finalization_data.steps == 2 then
             table.insert(finalization_data.steps, "> Trim the screencast...")
 
@@ -1358,6 +1357,11 @@ function love.keypressed(key, scancode)
     assertions.is_string(scancode)
 
     if key == "escape" then
+        local _, err = os.execute(FFMPEG_STOP_COMMAND)
+        if err ~= nil then
+            error("unable to execute the command: " .. err)
+        end
+
         love.event.quit()
     elseif key == "return" then
         local start_button = _get_start_button()
