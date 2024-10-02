@@ -36,7 +36,7 @@ _**Disclaimer:** this demo was written directly on an Android smartphone with th
   - fade in and out:
     - support for a start delay for fading in;
     - quit at the finish of the fading out;
-    - play the sounds during the animation:
+    - play the sounds during the animation (optionally):
       - play the foreground sound during the fading in;
       - play the background sound during the fading in and out;
 - drawing of the text rectangles (optionally):
@@ -52,11 +52,25 @@ _**Disclaimer:** this demo was written directly on an Android smartphone with th
       - all animations run sequentially one after the other;
       - support for a start delay for animation;
       - quit at the finish of the animation;
-      - play the separate sound during each animation;
+      - play the separate sound during each animation (optionally);
+- automatic screencast:
+  - use the [ffmpeg](https://www.ffmpeg.org/) tool;
+  - support for Linux only;
+  - capture video:
+    - with the [X.Org](https://www.x.org/);
+  - capture audio (optionally):
+    - with the [ALSA](https://www.alsa-project.org/);
+    - with the [PulseAudio](https://www.freedesktop.org/wiki/Software/PulseAudio/);
+  - postprocessing:
+    - automatic waiting for the finish of the [ffmpeg](https://www.ffmpeg.org/) tool;
+    - automatic trimming screencast allowances (optionally);
 - menu and settings:
   - main menu allows to choose between the general drawing modes (see above);
   - background settings allow to choose between the background drawing modes (see above);
-  - text rectangle settings allow to set the text to be displayed.
+  - text rectangle settings allow to set the text to be displayed;
+  - misc. settings allow to choose:
+    - between the silent and full-sounding modes;
+    - whether or not to trim videos automatically.
 
 ## Running
 

@@ -1,5 +1,33 @@
 # Change Log
 
+## [v1.5.0](https://github.com/thewizardplusplus/wizard-intro/tree/v1.5.0) (2024-10-02)
+
+Add the automatic screencast and make playing the sounds during the animation optional.
+
+- drawing of the logo:
+  - fade in and out:
+    - make playing the sounds during the animation optional;
+- drawing of the text rectangles:
+  - animations:
+    - common features:
+      - make playing the separate sound during each animation optional;
+- automatic screencast:
+  - use the [ffmpeg](https://www.ffmpeg.org/) tool;
+  - support for Linux only;
+  - capture video:
+    - with the [X.Org](https://www.x.org/);
+  - capture audio (optionally):
+    - with the [ALSA](https://www.alsa-project.org/);
+    - with the [PulseAudio](https://www.freedesktop.org/wiki/Software/PulseAudio/);
+  - postprocessing:
+    - automatic waiting for the finish of the [ffmpeg](https://www.ffmpeg.org/) tool;
+    - automatic trimming screencast allowances (optionally);
+- menu and settings:
+  - misc. settings allow to choose:
+    - between the silent and full-sounding modes;
+    - whether or not to trim videos automatically;
+  - use the default values of the settings in the UI.
+
 ## [v1.4.1](https://github.com/thewizardplusplus/wizard-intro/tree/v1.4.1) (2024-08-22)
 
 Improve the menu and settings and the code style.
