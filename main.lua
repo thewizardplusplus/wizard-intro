@@ -1181,32 +1181,42 @@ function love.update(dt)
 
             finalization_thread = _execute_in_background(FFMPEG_STOP_COMMAND)
         elseif #finalization_data.steps == 2 then
-            table.insert(finalization_data.steps, "> Trim the screencast...")
+            if use_trimming then
+                table.insert(
+                    finalization_data.steps,
+                    "> Trim the screencast..."
+                )
 
-            local rounded_start_time = _round_to_modulus(
-                START_DELAY + SCREENCAST_ADDITIONAL_DELAY,
-                SCREENCAST_FPS,
-                "ceil"
-            )
-            local rounded_finish_time = _round_to_modulus(
-                finish_time - start_time - SCREENCAST_ADDITIONAL_DELAY,
-                SCREENCAST_FPS,
-                "floor"
-            )
-            local trimmed_screencast_name = string.gsub(
-                screencast_name,
-                "%.([^%.]+)$", "_trimmed.%1"
-            )
-            local trimming_command = string.format(
-                "ffmpeg -i %s -ss %.3f -to %.3f -c copy %s",
-                screencast_name,
-                rounded_start_time,
-                rounded_finish_time,
-                trimmed_screencast_name
-            )
-            print(trimming_command)
+                local rounded_start_time = _round_to_modulus(
+                    START_DELAY + SCREENCAST_ADDITIONAL_DELAY,
+                    SCREENCAST_FPS,
+                    "ceil"
+                )
+                local rounded_finish_time = _round_to_modulus(
+                    finish_time - start_time - SCREENCAST_ADDITIONAL_DELAY,
+                    SCREENCAST_FPS,
+                    "floor"
+                )
+                local trimmed_screencast_name = string.gsub(
+                    screencast_name,
+                    "%.([^%.]+)$", "_trimmed.%1"
+                )
+                local trimming_command = string.format(
+                    "ffmpeg -i %s -ss %.3f -to %.3f -c copy %s",
+                    screencast_name,
+                    rounded_start_time,
+                    rounded_finish_time,
+                    trimmed_screencast_name
+                )
+                print(trimming_command)
 
-            finalization_thread = _execute_in_background(trimming_command)
+                finalization_thread = _execute_in_background(trimming_command)
+            else
+                table.insert(
+                    finalization_data.steps,
+                    "> Trim the screencast... [SKIP]"
+                )
+            end
         elseif #finalization_data.steps == 3 then
             table.insert(finalization_data.steps, "All is done!")
 
