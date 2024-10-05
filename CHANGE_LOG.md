@@ -1,5 +1,13 @@
 # Change Log
 
+## [v1.5.1](https://github.com/thewizardplusplus/wizard-intro/tree/v1.5.1) (2024-10-05)
+
+Set up the building of the demo.
+
+- adding the configuration of the [makelove](https://github.com/pfirsich/makelove) tool:
+  - supporting the building of the demo for the following platforms:
+    - Linux (via the [AppImage](https://appimage.org/) format).
+
 ## [v1.5.0](https://github.com/thewizardplusplus/wizard-intro/tree/v1.5.0) (2024-10-02)
 
 Add the automatic screencast and make playing the sounds during the animation optional.
