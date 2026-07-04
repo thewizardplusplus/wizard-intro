@@ -51,6 +51,8 @@ local UI_FONT_SIZE = 0.05
 local TEXT_INPUT_COUNT = 7
 local SCREENCAST_FPS = 24
 local SCREENCAST_ADDITIONAL_DELAY = 5
+local SCREENCAST_DIRECTORY = "screencasts"
+local SCREENCAST_DIRECTORY_CREATION_COMMAND = "mkdir --parents " .. SCREENCAST_DIRECTORY
 local FFMPEG_ALSA_AUDIO_INPUT = "hw:0,0"
 local FFMPEG_PULSE_AUDIO_INPUT = "0"
 -- supported audio input devices: alsa, pulse
@@ -713,9 +715,20 @@ local function _start_screencast(width, height)
         return
     end
 
+    print(SCREENCAST_DIRECTORY_CREATION_COMMAND)
+
+    local _, err = os.execute(SCREENCAST_DIRECTORY_CREATION_COMMAND)
+    if err ~= nil then
+        error(string.format(
+            "unable to create the screencast directory %q: %s",
+            SCREENCAST_DIRECTORY,
+            err
+        ))
+    end
+
     local current_timestamp = os.date("%FT%T%z")
     screencast_name = string.format(
-        "screencasts/%s_%s.mkv",
+        SCREENCAST_DIRECTORY .. "/%s_%s.mkv",
         ui_selected_app_mode,
         current_timestamp
     )
@@ -760,7 +773,7 @@ local function _start_screencast(width, height)
     end
     print(screencast_command)
 
-    local _, err = os.execute(screencast_command)
+    _, err = os.execute(screencast_command)
     if err ~= nil then
         error("unable to execute the ffmpeg tool: " .. err)
     end
