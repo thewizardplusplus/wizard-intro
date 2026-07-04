@@ -72,7 +72,7 @@ local show_logo = false
 local show_boxes = false
 local text_for_boxes = ""
 local use_sounds = false
-local use_trimming = false
+local use_trimming = true
 
 local field
 local logo
@@ -802,7 +802,7 @@ local function _initialize_scene()
 
     _start_screencast(width, height)
 
-    start_time = os.clock()
+    start_time = love.timer.getTime()
 end
 
 local function _reset_scene()
@@ -1143,7 +1143,7 @@ _on_finish = function(width, height)
         text_height = text_size.height,
         steps = {"Finalization:"},
     }
-    finish_time = os.clock()
+    finish_time = love.timer.getTime()
 end
 
 function love.load()
@@ -1197,15 +1197,31 @@ function love.update(dt)
                     SCREENCAST_FPS,
                     "floor"
                 )
+                local trimming_duration =
+                    rounded_finish_time - rounded_start_time
+                if trimming_duration <= 0 then
+                    error(string.format(
+                        "unable to trim the screencast: "
+                            .. "non-positive duration %.3f",
+                        trimming_duration
+                    ))
+                end
+
                 local trimmed_screencast_name = string.gsub(
                     screencast_name,
                     "%.([^%.]+)$", "_trimmed.%1"
                 )
                 local trimming_command = string.format(
-                    "ffmpeg -i %s -ss %.3f -to %.3f -c copy %s",
+                    "ffmpeg "
+                        .. "-i %s "
+                        .. "-ss %.3f -t %.3f "
+                        .. "-map 0 "
+                        .. "-c:v libx264rgb -crf 0 -preset ultrafast -color_range 2 "
+                        .. "-c:a copy "
+                        .. "%s",
                     screencast_name,
                     rounded_start_time,
-                    rounded_finish_time,
+                    trimming_duration,
                     trimmed_screencast_name
                 )
                 print(trimming_command)
