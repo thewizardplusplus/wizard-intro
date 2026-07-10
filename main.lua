@@ -14,6 +14,7 @@ local flux = require("flux")
 local tick = require("tick")
 local SYSLText = require("sysl-text")
 local moonshine = require("moonshine")
+local argparse = require("argparse")
 require("gooi")
 
 local START_DELAY = 1
@@ -90,7 +91,100 @@ local ui_selected_app_mode
 local finalization_data
 local finalization_thread
 local start_time
+local cli_options
 local finish_time
+
+
+local function _convert_to_enumeration(choices)
+    assertions.is_sequence(choices, checks.is_string)
+
+    return function(value)
+        for _, choice in ipairs(choices) do
+            if value == choice then
+                return value
+            end
+        end
+
+        error("expected one of: " .. table.concat(choices, ", "))
+    end
+end
+
+local function _parse_command_line()
+    local parser = argparse(
+        "wizard-intro",
+        "Generate the wizard intro without using the UI."
+    )
+    parser:flag("--cli")
+        :description("Run the animation and screencast immediately.")
+    parser:option("--mode")
+        :description("Animation mode: background, logo, or text-rectangles.")
+        :default("background")
+        :convert(_convert_to_enumeration({
+            "background",
+            "logo",
+            "text-rectangles",
+        }))
+    parser:flag("--pale")
+        :description("Enable the pale background mode.")
+    parser:flag("--transparent")
+        :description("Enable the transparent background mode.")
+    parser:flag("--blur")
+        :description("Enable the blur background mode.")
+    parser:option("--blur-effect")
+        :description(
+            "Blur effect: boxblur, fastgaussianblur, gaussianblur, or glow."
+        )
+        :default(field_blur_effect)
+        :convert(_convert_to_enumeration({
+            "boxblur",
+            "fastgaussianblur",
+            "gaussianblur",
+            "glow",
+        }))
+    parser:option("--text")
+        :description("Text for the text-rectangles mode.")
+        :default("")
+    parser:flag("--sounds")
+        :description("Enable animation sounds and audio capture.")
+    parser:flag("--no-trimming")
+        :description("Disable automatic screencast trimming.")
+
+    local args = {}
+    for _, value in ipairs(arg or {}) do
+        if string.sub(value, 1, 1) == "-" then
+            table.insert(args, value)
+        elseif #args > 0 then
+            table.insert(args, value)
+        end
+    end
+
+    local is_success, result = parser:pparse(args)
+    if not is_success then
+        error("unable to parse command line arguments: " .. result)
+    end
+
+    if result.mode == "text-rectangles" and result.text == "" then
+        error("the --text option is required for the text-rectangles mode")
+    end
+
+    return result
+end
+
+local function _apply_command_line_options(options)
+    assertions.is_table(options)
+
+    ui_selected_app_mode = options.mode
+    use_pale_field_mode = options.pale
+    use_transparent_field_mode = options.transparent
+    use_blur_field_mode = options.blur
+    field_blur_effect = options.blur_effect
+    text_for_boxes = options.text
+    use_sounds = options.sounds
+    use_trimming = not options.no_trimming
+    show_logo = ui_selected_app_mode == "logo"
+    show_boxes = ui_selected_app_mode == "text-rectangles"
+    is_menu = false
+end
 
 -- forward declaration
 local _on_finish
@@ -1162,19 +1256,27 @@ end
 function love.load()
     math.randomseed(os.time())
 
+    cli_options = _parse_command_line()
+
     box_audio = love.audio.newSource(
         "resources/SlideOut/SlideOut.mp3",
         "static"
     )
     text_audio = love.audio.newSource("resources/Typing/Typing.mp3", "static")
 
-    ui_root_components = _initialize_ui(
-        love.graphics.getWidth(),
-        love.graphics.getHeight()
-    )
-    is_menu = true
     is_screencast = false
     finalization_data = { steps = {} }
+
+    if cli_options.cli then
+        _apply_command_line_options(cli_options)
+        _initialize_scene()
+    else
+        ui_root_components = _initialize_ui(
+            love.graphics.getWidth(),
+            love.graphics.getHeight()
+        )
+        is_menu = true
+    end
 end
 
 function love.update(dt)
@@ -1391,8 +1493,13 @@ function love.resize(width, height)
 
     _reset_scene()
 
-    ui_root_components = _initialize_ui(width, height, ui_root_components)
-    is_menu = true
+    if cli_options.cli then
+        _apply_command_line_options(cli_options)
+        _initialize_scene()
+    else
+        ui_root_components = _initialize_ui(width, height, ui_root_components)
+        is_menu = true
+    end
     -- don't reset `is_screencast` here -
     -- it should be updated only once
 end

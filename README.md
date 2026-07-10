@@ -133,6 +133,26 @@ Then run the game with the [LÖVE](https://love2d.org/) engine:
 $ love .
 ```
 
+To skip the UI and start the animation with automatic screencast capture immediately, pass the CLI options after the project path:
+
+```
+$ love . -- --cli --mode background
+$ love . -- --cli --mode logo --pale --blur --blur-effect glow --sounds
+$ love . -- --cli --mode text-rectangles --text "Some intro text" --transparent --no-trimming
+```
+
+Available CLI options:
+
+- `--cli` — start without the UI;
+- `--mode background|logo|text-rectangles` — select the animation mode;
+- `--pale` — enable the pale background mode;
+- `--transparent` — enable the transparent background mode;
+- `--blur` — enable the blur background mode;
+- `--blur-effect boxblur|fastgaussianblur|gaussianblur|glow` — select the blur effect;
+- `--text <text>` — set the text for the `text-rectangles` mode;
+- `--sounds` — enable sounds and audio capture;
+- `--no-trimming` — disable automatic screencast trimming.
+
 ## License
 
 GPL-3.0-or-later
